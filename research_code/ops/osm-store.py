@@ -117,7 +117,6 @@ class OhsomeDB:
 		gdf = gpd.GeoDataFrame(df, geometry='geometry')
 		gdf.to_file(output_geojson, driver="GeoJSON")
 
-
 	def extract_benches(self, gdf):
 		output_file = self.dir_cache / 'osm_benches.geojson'
 		if not output_file.exists():
@@ -151,7 +150,7 @@ class OhsomeDB:
 			logger.info(f"Skipping Extraction. File exists {output_file}")
 
 
-	# def extract_transport_station(self, gdf, keys=['bus_station']):
+	# def extract_transport_station(self, gdf, keys=['bus_station', 'transporatation_station']):
 	# def extract_healthcare(self, gdf, keys=['']):
 	# def extract_buildings(self, Polygon)
 
@@ -159,6 +158,6 @@ class OhsomeDB:
 
 if __name__ == "__main__":
 	db=OhsomeDB()
-	gdf = db.extract_facilities(tag_key='shop')
+	db.extract_buildings(output_geojson='cache/osm/osm_bldg.geojson')
 	# db.extract_benches(gdf)
-	print(gdf.shape)
+
