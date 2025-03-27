@@ -1,3 +1,7 @@
 /cache/**
 /.env
 /cache/
+/.idea/**
+/.idea
+/.DS_Strore/**
+/.DS_Store
