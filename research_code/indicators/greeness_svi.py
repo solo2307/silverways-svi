@@ -53,6 +53,14 @@ class GreenIndex_SVI:
         grass_index = np.sum(prediction == 4) / prediction.size
         return [green_index, tree_index, bush_index, grass_index]
 
+if __name__ == "__main__":
+    data_dir = Path("cache/google-streetview")
+    output_file = data_dir / "green_indices.csv"
+
+    green_index_svi = GreenIndex_SVI(data_dir)
+    green_index_svi.process_images(output_file)
+
+    logger.info(f"Green indices saved to {output_file}")
 
 
 

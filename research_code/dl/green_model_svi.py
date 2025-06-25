@@ -31,7 +31,7 @@ class SegModelPSPNet:
     """
             Initializes the SegModelPSPNet class by setting paths and loading the models.
 
-            :param model_path: Path to the model directory.
+            :param model_path: Path to the models directory.
             :param encoder_name: Name of the encoder architecture.
             :param decoder_name: Name of the decoder architecture.
             :param fc_dim: Dimension of the fully connected layer.
@@ -55,7 +55,7 @@ class SegModelPSPNet:
         self.segmentation_module = self._load_model()
 
     def _validate_files(self):
-        """Checks if the model weight files exist before loading."""
+        """Checks if the models weight files exist before loading."""
         if not self.encoder_file.exists():
             raise FileNotFoundError(f"Encoder weights not found: {self.encoder_file}")
         if not self.decoder_file.exists():
