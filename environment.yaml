@@ -1,4 +1,4 @@
-name: sw-env
+name: silver-ways
 channels:
   - conda-forge
   - pytorch
@@ -19,6 +19,7 @@ dependencies:
   - geopandas=0.14.2
   - fiona=1.9.0
   - pip:
+      - python-geohash==0.8.5
       - pillow==10.3.0
       - scikit-learn==1.5.0
       - scikit-image==0.24.0
@@ -52,3 +53,5 @@ dependencies:
       - duckdb==1.2.0
       - minio==7.2.15
       - mercantile==1.2.1
+      - geemap==0.32.0
+      - mit-semseg==1.0.0
