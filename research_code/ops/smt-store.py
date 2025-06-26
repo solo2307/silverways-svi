@@ -158,33 +158,33 @@ def generate_and_download_sketches_roi(city_name, roi_path, csv_path, tile_width
             continue
 
         if uuid == "ERROR":
-            print(f"⚠️ Skipping fid {fid} due to previous submission error.")
+            # print(f"⚠️ Skipping fid {fid} due to previous submission error.")
             continue
 
         status = smt.check_status(uuid)
 
         if status == "SUCCESS":
             smt.download_map(uuid, out_path)
-        elif status in ("FAILURE", "ERROR", None):
-            print(f"🔁 Resubmitting map for fid {fid} (UUID: {uuid}) due to status: {status}")
+        elif status in ("FAILURE", "PENDING","ERROR", None):
+            # print(f"🔁 Resubmitting map for UUID: {uuid} due to status: {status}")
             new_uuid = smt._submit_bbox(bbox, scale)
             submitted_df.at[idx, 'uuid'] = new_uuid  # Update UUID in the DataFrame
             resave = True
             cnt += 1
         else:
             process_cnt += 1
-            print(f"⏳ fid {fid} is still processing. UUID: {uuid}")
+            print(f"⏳ UUID: {uuid} is {status} ")
 
     # Save updated UUIDs if any were changed
     if resave:
         submitted_df.to_csv(csv_path, sep=";", index=False)
-        print(f"\n💾 Updated submission file saved to {csv_path}: {cnt} UUIDs resubmitted.")
+        # print(f"\n💾 Updated submission file saved to {csv_path}: {cnt} UUIDs resubmitted.")
         grid_df = grid_df.drop(columns=['uuid'], errors='ignore')
         merged_df = grid_df.merge(submitted_df[['geohash', 'uuid']], on='geohash', how='left')
         merged_df.to_file(grid_path, driver='GPKG')
-        print(f"New uuid and geohash ids saved to {grid_path}")
-    else:
-        print("\n✅ No UUIDs needed resubmission.")
+        # print(f"New uuid and geohash ids saved to {grid_path}")
+    # else:
+    #     print("\n✅ No UUIDs needed resubmission.")
 
     print(f"\n📊 Summary: {len(submitted_df)} total submissions: "
           f"\n {len(submitted_df) - (process_cnt+cnt)} downloaded,"

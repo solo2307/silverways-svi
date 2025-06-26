@@ -6,6 +6,9 @@ from pathlib import Path
 import googlemaps
 from datetime import datetime
 from tqdm import tqdm
+import hydra
+from omegaconf import DictConfig
+
 
 # ---------- Global Logger Setup ----------
 def setup_logger():
@@ -45,8 +48,8 @@ class GoogleStaticStore:
         image_path = os.path.join(self.image_cache_path, image_name)
 
         if os.path.exists(image_path):
-            logger.info(f"[SKIP] {image_name} already exists.")
-            return image_path
+            # logger.info(f"[SKIP] {image_name} already exists.")
+            return image_path, False
 
         url = "https://maps.googleapis.com/maps/api/streetview"
         params = {
@@ -64,21 +67,24 @@ class GoogleStaticStore:
             with open(image_path, "wb") as f:
                 f.write(response.content)
             logger.info(f"[SAVED] {image_name}")
-            return image_path
+            return image_path, True
         except requests.RequestException as e:
             logger.error(f"[ERROR] pano_id {pano_id}, heading {heading}: {e}")
-            return None
+            return None, None
         finally:
             response.close()
 # ---------- External CSV Processor Function ----------
 def process_pano_csv(csv_path, api_key, output_dir, headings=[0, 90, 180, 270],
-                     pitch=0, output_metadata_csv=None, max_requests=10000):
+                     pitch=0, output_metadata_csv=None, max_requests=None):
+
     # Read CSV file and keep only unique panoramic ids
     df = pd.read_csv(csv_path)
     if 'pano_id' not in df.columns:
         raise ValueError("CSV must contain a 'pano_id' column.")
     df = df.dropna(subset=['pano_id'])
     df = df.drop_duplicates(subset='pano_id')
+    if max_requests is None:
+        max_requests = len(df) * 4
 
     store = GoogleStaticStore(api_key=api_key, cache_folder=output_dir)
     metadata = []
@@ -89,10 +95,14 @@ def process_pano_csv(csv_path, api_key, output_dir, headings=[0, 90, 180, 270],
         lat = row.get('lat', None)
         lon = row.get('lon', None)
 
+        if pano_id.startswith('CAoS'):
+            # logger.warning(f"[SKIP] pano_id {pano_id} is not a valid Google Street View ID.")
+            continue
+
         for heading in headings:
-            image_path = store.fetch_image_with_pano(pano_id, heading=heading, pitch=pitch)
-            if image_path:
-                request_count += 4
+            image_path, saved = store.fetch_image_with_pano(pano_id, heading=heading, pitch=pitch)
+            if saved is not None and saved is True:
+                request_count += 1
                 metadata.append({
                     "pano_id": pano_id,
                     "heading": heading,
@@ -107,15 +117,20 @@ def process_pano_csv(csv_path, api_key, output_dir, headings=[0, 90, 180, 270],
         pd.DataFrame(metadata).to_csv(output_metadata_csv, index=False)
         logger.info(f"[METADATA SAVED] {output_metadata_csv}")
 
-if __name__ == "__main__":
-    CSV_PATH = 'cache/mannheim_gvi_samples.csv'# 'cache/mannheim_google_panorama_metadata.csv'
-    API_KEY = 'YOUR_GOOGLE_API_KEY'  # Replace with your actual Google API key
-    OUTPUT_IMAGE_DIR = '/Volumes/sd17f001/ygrin/silverways/mannheim/google-streetview'#'cache/google-streetview'
+@hydra.main(version_base=None, config_path="../../conf", config_name="config")
+def main(cfg: DictConfig):
+    CSV_PATH = 'cache/mannheim_google_panorama_metadata.csv'
+    API_KEY = cfg.gcp.service_key
+    OUTPUT_IMAGE_DIR = f'{cfg.storage.sds}/google-streetview'  # 'cache/google-streetview'
     process_pano_csv(
         csv_path=CSV_PATH,
         api_key=API_KEY,
         headings=[0, 90, 180, 270],
         output_dir=OUTPUT_IMAGE_DIR,
         output_metadata_csv="cache/downloaded_images.csv",
-        max_requests=9000
+        max_requests=2000
     )
+
+
+if __name__ == "__main__":
+    main()

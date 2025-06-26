@@ -1,1 +1,0 @@
-""" NDVI & Canopy Height Model """

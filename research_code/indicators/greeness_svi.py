@@ -24,7 +24,7 @@ class GreenIndex_SVI:
             raise FileNotFoundError(f"Data directory {data_dir} does not exist.")
 
         self.data_dir = data_dir
-        self.model_path = data_dir / "green_index_model.pth"
+        # self.model_path = data_dir / "green_index_model.pth"
         self.images = self._load_images()
 
     def _load_images(self):
@@ -37,8 +37,8 @@ class GreenIndex_SVI:
         return image_path
 
     def process_images(self, output_file: Path):
-        model = SegModelPSPNet(model_path=self.model_path)
-        for image in tqdm(self.images, total = len(self.images), desc='Processing images'):
+        model = SegModelPSPNet(model_path='data/models')
+        for image in tqdm(self.images, desc='Processing images'):
             # Process prediction
             prediction = model.predict(test_image_path=image)
             green_indices = self.calculate_green_indices(prediction)
@@ -47,15 +47,19 @@ class GreenIndex_SVI:
                 f.write(f"{image.name},{','.join(map(str, green_indices))}\n")
 
     def calculate_green_indices(self, prediction: np.ndarray):
-        green_index = np.sum(prediction == 1) / prediction.size
-        tree_index = np.sum(prediction == 2) / prediction.size
-        bush_index = np.sum(prediction == 3) / prediction.size
-        grass_index = np.sum(prediction == 4) / prediction.size
+        total_size = prediction.size
+        tree_index = np.sum(prediction == 4) / total_size
+        bush_index = np.sum(prediction == 17) / total_size
+        grass_index = np.sum(prediction == 9) / total_size
+
+        # Optionally, if you want combined green vegetation index:
+        green_index = (np.sum(prediction == 4) + np.sum(prediction == 9) + np.sum(prediction == 17)) / total_size
+
         return [green_index, tree_index, bush_index, grass_index]
 
 if __name__ == "__main__":
     data_dir = Path("cache/google-streetview")
-    output_file = data_dir / "green_indices.csv"
+    output_file =Path( "cache/green_indices.csv")
 
     green_index_svi = GreenIndex_SVI(data_dir)
     green_index_svi.process_images(output_file)
