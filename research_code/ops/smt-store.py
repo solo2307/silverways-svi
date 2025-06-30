@@ -165,7 +165,7 @@ def generate_and_download_sketches_roi(city_name, roi_path, csv_path, tile_width
 
         if status == "SUCCESS":
             smt.download_map(uuid, out_path)
-        elif status in ("FAILURE", "PENDING","ERROR", None):
+        elif status in ("FAILURE", "PENDING", "ERROR", None):
             # print(f"🔁 Resubmitting map for UUID: {uuid} due to status: {status}")
             new_uuid = smt._submit_bbox(bbox, scale)
             submitted_df.at[idx, 'uuid'] = new_uuid  # Update UUID in the DataFrame
