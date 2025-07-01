@@ -17,14 +17,20 @@ def upload_folder(client, bucket_name, local_folder, remote_folder, allowed_exte
         dirs[:] = [d for d in dirs if not d.startswith('.')]
         files = [f for f in files if not f.startswith('.')]
         for file_name in tqdm(files, total=len(files), desc=f"Uploading to {remote_folder}"):
-            # # Skip hidden files (starting with .)
-            # if file_name.startswith('.'):
-            #     continue
             if allowed_extensions and not file_name.lower().endswith(tuple(allowed_extensions)):
                 continue
 
             local_file_path = os.path.join(root, file_name)
             remote_object_name = f"{remote_folder.rstrip('/')}/{file_name}"
+            # Check if the object already exists in MinIO
+            try:
+                client.stat_object(bucket_name, remote_object_name)
+                # print(f"⏭️  Skipped (already exists): {remote_object_name}")
+                continue  # Skip if object exists
+            except S3Error as e:
+                if e.code != "NoSuchKey":
+                    # print(f"❌ Error checking object {remote_object_name}: {e}")
+                    continue  # Skip this file due to error
 
             client.fput_object(bucket_name, remote_object_name, local_file_path)
             # print(f"Uploaded {local_file_path} to {remote_object_name}")

@@ -119,7 +119,7 @@ def process_pano_csv(csv_path, api_key, output_dir, headings=[0, 90, 180, 270],
 
 @hydra.main(version_base=None, config_path="../../conf", config_name="config")
 def main(cfg: DictConfig):
-    CSV_PATH = 'cache/mannheim_google_panorama_metadata.csv'
+    CSV_PATH = 'cache/panorama_google_samples.csv'
     API_KEY = cfg.gcp.service_key
     OUTPUT_IMAGE_DIR = f'{cfg.storage.sds}/google-streetview'  # 'cache/google-streetview'
     process_pano_csv(
