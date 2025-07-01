@@ -11,29 +11,31 @@ def ensure_bucket_exists(client, bucket_name):
     else:
         print(f"Bucket '{bucket_name}' already exists.")
 
+
 def upload_folder(client, bucket_name, local_folder, remote_folder, allowed_extensions=None):
     for root, dirs, files in os.walk(local_folder):
         # Skip hidden folders
         dirs[:] = [d for d in dirs if not d.startswith('.')]
         files = [f for f in files if not f.startswith('.')]
+
         for file_name in tqdm(files, total=len(files), desc=f"Uploading to {remote_folder}"):
             if allowed_extensions and not file_name.lower().endswith(tuple(allowed_extensions)):
                 continue
 
             local_file_path = os.path.join(root, file_name)
             remote_object_name = f"{remote_folder.rstrip('/')}/{file_name}"
-            # Check if the object already exists in MinIO
+
             try:
+                # Check if object already exists in MinIO
                 client.stat_object(bucket_name, remote_object_name)
                 # print(f"⏭️  Skipped (already exists): {remote_object_name}")
-                continue  # Skip if object exists
+                continue
             except S3Error as e:
-                if e.code != "NoSuchKey":
-                    # print(f"❌ Error checking object {remote_object_name}: {e}")
-                    continue  # Skip this file due to error
-
-            client.fput_object(bucket_name, remote_object_name, local_file_path)
-            # print(f"Uploaded {local_file_path} to {remote_object_name}")
+                if e.code == "NoSuchKey":
+                    # Object doesn't exist, so upload it
+                    client.fput_object(bucket_name, remote_object_name, local_file_path)
+                    print(f"Uploaded to {remote_object_name}")
+                    continue
 def download_from_minio(
     client: Minio,
     bucket_name: str,
