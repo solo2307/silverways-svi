@@ -1,3 +1,8 @@
+"""
+This script to generate semantic segmentation predictions for a dataset of images
+"""
+
+
 import os
 import logging
 from pathlib import Path
@@ -131,7 +136,7 @@ def calculate_indicators(prediction: np.ndarray):
 
     return [sky_index, green_index, tree_index, bush_index, grass_index]
 
-class DataSet:
+class GSVIDataSet:
     def __init__(self, input_dir: str, pred_dir: str,model):
         """
         Initializes the dataset processor for semantic segmentation.
@@ -312,7 +317,7 @@ if __name__ == "__main__":
     pred_dir = 'cache/google-prediction'
 
     # model = SegModelPSPNet(model_path)
-    # dataset = DataSet(input_dir=input_dir, pred_dir=pred_dir, model=model)
+    # dataset = GSVIDataSet(input_dir=input_dir, pred_dir=pred_dir, model=model)
     #
     # # Process all images
     # dataset.process_all(save_pred=True, gvi=False)
@@ -322,7 +327,7 @@ if __name__ == "__main__":
     show_overlay_row_with_indices(
         base_path=input_dir,
         prediction_path=pred_dir,
-        uuid="M2a7yeIPC0hRc4IUvnygZA",
+        uuid="j9ORkgM5xdMPClKke-6O5Q",
         indices_csv='cache/google-prediction/indices.csv',
         alpha=0.4
     )

@@ -1,3 +1,6 @@
+"""
+Manual script to generate tiles and download Sketch Map Tool maps for ROI
+"""
 import geopandas as gpd
 from shapely.geometry import box
 import pandas as pd

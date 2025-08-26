@@ -1,0 +1,29 @@
+streetview:
+  # Input road network file (GPKG, SHP, GeoJSON)
+  input_file: "/Users/ygrinblat/Documents/HeiGIT_Projects/SilverWays/GeoData/Mannheim/roads_mannheim.gpkg"
+
+  #Output paths
+  output_points: "mannheim_points_osm.gpkg"
+  output_panorama_metadata: "mannheim_google_panorama_metadata.csv"
+
+  # Point generation parameters:
+  point_step: 100
+  merge_distance: 20
+
+  # Request Metadata settings
+  request_delay : 0.1
+  request_timeout: 6.0 # seconds per request timeout
+  qps: 10 # max queries per second
+
+  # Logging
+  log_dir: "logs"
+
+  # Image download settings
+  images:
+    headings: [0, 90, 180, 270]
+    fov: 90
+    pitch: 0
+    size: "640x640"
+    max_requests: 2000
+    dir: "google-streetview"
+    manifest: "cache/downloaded_images.csv"

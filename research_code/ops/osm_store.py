@@ -1,4 +1,3 @@
-
 import json
 from shapely import wkt
 from pathlib import Path
@@ -6,6 +5,8 @@ import pandas as pd
 import geopandas as gpd
 import logging
 import duckdb
+import hydra
+from omegaconf import DictConfig
 
 # Configure the logging
 logging.basicConfig(
@@ -15,7 +16,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class OhsomeDB:
-	def __init__(self, dir_cache='cache/osm', key_id='osm-yulia', key_secret='its_ohsome'):
+	def __init__(self, dir_cache='cache/osm',
+				 key_id='osm-yulia',
+				 key_secret='its_ohsome'):
 		self._connect()
 		self._create_secret(key_id, key_secret)
 		self.dir_cache = Path(dir_cache)
@@ -154,10 +157,20 @@ class OhsomeDB:
 	# def extract_healthcare(self, gdf, keys=['']):
 	# def extract_buildings(self, Polygon)
 
-
+def run_pipeline(cfg: DictConfig)-> int:
+	try:
+		db = OhsomeDB()
+		db.extract_buildings(output_geojson='cache/osm/osm_bldg.geojson')
+		# db.extract_benches(gdf)
+		return 0
+	except Exception:
+		logger.exception("❌ OhsomeDB extraction failed")
+		return 1
+@hydra.main(version_base=None, config_path="../../conf", config_name="config")
+def hydra_main(cfg: DictConfig):
+	return run_pipeline(cfg)
 
 if __name__ == "__main__":
-	db=OhsomeDB()
-	db.extract_buildings(output_geojson='cache/osm/osm_bldg.geojson')
-	# db.extract_benches(gdf)
+	hydra_main()
+
 

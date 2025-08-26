@@ -1,0 +1,6 @@
+osm:
+  region_path: "data/osm_admin_level_6_mannheim.geojson"
+  roads: True
+  footpath: True
+  landuse: True
+  poi: []

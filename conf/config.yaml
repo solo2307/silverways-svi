@@ -1,15 +1,20 @@
 defaults:
   - _self_
+  - datasets: streetview_config
+
 #  Hydra parameters
 hydra:
   run:
     dir: ./outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}
 # Credentials for DataBase
 minio:
+  endpoint: "hot.storage.heigit.org"
   ohsome_account: ${oc.env:OHSOME_MINIO_ACCESS_ID}
   ohsome_key:  ${oc.env:OHSOME_MINIO_ACCESS_KEY}
   silverways_account:  ${oc.env:HOT_MINIO_ACCESS_ID}
   silverways_key:  ${oc.env:HOT_MINIO_ACCESS_KEY}
+  bucket_name: "heigit-silverways"
+  folder_name: "mannheim/google-streetview"
 
 # Credentials to Google Earth Engine and Google Cloud Platform
 gee:
