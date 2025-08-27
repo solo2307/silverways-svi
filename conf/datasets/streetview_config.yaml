@@ -1,10 +1,10 @@
 streetview:
   # Input road network file (GPKG, SHP, GeoJSON)
-  input_file: "/Users/ygrinblat/Documents/HeiGIT_Projects/SilverWays/GeoData/Mannheim/roads_mannheim.gpkg"
+  input_file: "/roads_mannheim.gpkg"
 
   #Output paths
   output_points: "mannheim_points_osm.gpkg"
-  output_panorama_metadata: "mannheim_google_panorama_metadata.csv"
+  output_panorama_metadata: "/Volumes/sd17f001/ygrin/silverways/mannheim/OSM/mannheim_google_panorama_metadata.csv"
 
   # Point generation parameters:
   point_step: 100
