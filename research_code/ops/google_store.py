@@ -178,7 +178,8 @@ def process_pano_csv(csv_path:Path,
 
     saved_count = 0
     request_count = 0
-    if max_requests is None:
+
+    if max_requests in ['None', 'null', None]:
         max_requests = len(df) * 4
     try:
         for idx, row in tqdm(df.iterrows(), total=len(df), desc="Processing panoramas"):

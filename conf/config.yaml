@@ -24,5 +24,5 @@ gcp:
 
 # Local Storage
 storage:
-  cache: cache
-  sds: /Volumes/sd17f001/ygrin/silverways/mannheim
+  cache: 'cache'
+  sds: '/Volumes/sd17f001/ygrin/silverways/mannheim'
