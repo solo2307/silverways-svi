@@ -1,6 +1,6 @@
 streetview:
   # Input road network file (GPKG, SHP, GeoJSON)
-  input_file: "/roads_mannheim.gpkg"
+  input_file: "roads_mannheim.gpkg"
 
   #Output paths
   output_points: "mannheim_points_osm.gpkg"

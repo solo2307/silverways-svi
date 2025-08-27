@@ -30,15 +30,28 @@ Preinstall mamba and run the following code
 
 ### 3. Usage
 #### Example of Google Street View Imagery
-Step 1: Prepare Your Region of Interest (ROI)
-Drop your region files into the data/ folder. Supported formats include .gpkg, .geojson, and .shp.
+Step 0: Prepare Road Network File (If  available, skip this step) 
 
-Step 2: Configure the Pipeline
+Run `osm_job.py` to retreat road network from OSM.
+
+Step 1: Configure the Pipeline
 Edit the YAML file in `conf/config.yml`:
- - assign a `service_key` that you generated in GCP
- - assign a `storage` location to store your data
+ - assign a `gcp.service_key` that you generated in GCP
+ - define the `storage.sds`/`storage.cache` location to store your data
 
-Step 3: Run the main script for Retreating Google Street View Imagery 
+Edit the Street View YAML in `conf/datasets/streetview_config.yaml`:
+- define the `input_file` to define your road network file
+- define  the output paths `output_points` and `output_panorama_metadata`
+- assign point settings such as `point_step` and `merge_distance`
+- assign a `request_delay` for retreat panorama images, there is no limit for the request of the Google street view panorama matadata 
+- define `manifest` to store the downloaded panorama images
+- define `dir` to store the downloaded panorama images, note: this folder will be created inside the `storage.sds`/`storage.cache` location
+- define `max_requests` to limit the number of downloaded panorama images, if it is **None** or **null** all the panorama images will be downloaded
+
+Step 3: Download Google Street View Imagery 
 - call `streetview_job.py` 
+
+Step 4: Backup the downloaded imagery to MINIO bucket (optional)
+- call `minio_backup_job.py`
 
 

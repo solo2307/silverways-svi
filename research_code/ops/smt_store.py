@@ -9,8 +9,6 @@ from tqdm import tqdm
 import os
 import uuid
 
-
-
 def create_grid(input_geom, tile_width, image_size=(1716, 1436), overlap=0.0):
     pixel_width, pixel_height = image_size
     aspect_ratio = pixel_width / pixel_height
