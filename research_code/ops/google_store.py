@@ -57,6 +57,22 @@ def _load_manifest_existing_pairs(manifest_csv: Path) -> Set[Tuple[str, int]]:
     except Exception:
         pass
     return pairs
+
+def generate_list_of_downloaded_files(dir: Path, df_panos:pd.DataFrame,output_fname:str):
+    try:
+        imgs = Path(dir).glob("*.jpg")
+        imgs_cleaned = [str(f) for f in imgs if not f.stem.startswith('.')]
+        df = pd.DataFrame(imgs_cleaned, columns=["image_path"])
+        df['pano_id'] = df['image_path'].apply(lambda x: Path(x).stem.replace('.jpg', ''))
+        df['heading'] = df['pano_id'].apply(lambda x: int(x.split('_')[-1]))
+        df['pano_id'] = df['pano_id'].str.replace(r'_(0|90|180|270)', '', regex=True)
+        df = df.join(df_panos.set_index('pano_id')[['lat', 'lon']], on='pano_id', how='left')
+        logger.info("Found %d images in %s", len(df), dir)
+        df.to_csv(output_fname, index=False)
+
+    except Exception:
+        logger.exception("Failed to generate list of downloaded files.")
+
 # ---------- Class Definition ----------
 class GoogleStaticStore:
     def __init__(self,
@@ -142,6 +158,8 @@ def process_pano_csv(csv_path:Path,
     logger.info("Unique pano_ids to consider: %d", len(df))
 
     # Pairs already logged in manifest
+    if not output_metadata_csv.exists():
+        generate_list_of_downloaded_files(output_dir, df, output_metadata_csv)
     seen_pairs = _load_manifest_existing_pairs(output_metadata_csv) if output_metadata_csv else set()
     # Prepare manifest for appends
     write_header = output_metadata_csv and (not output_metadata_csv.exists() or output_metadata_csv.stat().st_size == 0)
@@ -157,7 +175,7 @@ def process_pano_csv(csv_path:Path,
     # Send request to download images from GoogleStaticStore
     store = GoogleStaticStore(api_key=api_key,cache_folder=output_dir,
                               fov=fov, pitch=pitch, size=size)
-    # metadata = []
+
     saved_count = 0
     request_count = 0
     if max_requests is None:
@@ -167,9 +185,11 @@ def process_pano_csv(csv_path:Path,
             pano_id = row['pano_id']
             lat = row.get('lat', None)
             lon = row.get('lon', None)
-            # if pano_id.startswith('CAoS'):# logger.warning(f"[SKIP] pano_id {pano_id} is not a valid Google Street View ID.")
-            #     continue
 
+            # Skip invalid pano_ids (e.g., starting with 'CAoS')
+            if pano_id.startswith('CAoS'):
+                continue
+            # Start downloading images for each heading
             for heading in headings:
                 pair = (pano_id, int(heading))
                 if manifest_writer and (pano_id,int(heading)) in seen_pairs:
@@ -190,22 +210,10 @@ def process_pano_csv(csv_path:Path,
                     )
                     seen_pairs.add(pair)
 
-                # if saved is not None and saved is True:
-                #     request_count += 1
-                #     metadata.append({
-                #         "pano_id": pano_id,
-                #         "heading": heading,
-                #         "lat": lat,
-                #         "lon": lon,
-                #         "image_path": image_path
-                #     })
-            # if request_count >= max_requests: break
-            if max_requests is not None and request_count >= max_requests:
-                logger.info("Reached max_requests=%d; stopping.", max_requests)
+            if request_count >= max_requests:
+                logger.info("Reached max_requests, send requests=%d; stopping. Saved before = %d", request_count,  saved_count)
                 return request_count
-        # if output_metadata_csv:
-        #     pd.DataFrame(metadata).to_csv(output_metadata_csv, index=False)
-        #     logger.info(f"[METADATA SAVED] {output_metadata_csv}")
+
     finally:
         if manifest_f:
             manifest_f.close()

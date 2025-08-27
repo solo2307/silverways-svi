@@ -66,24 +66,21 @@ def run_job(cfg: DictConfig) -> int:
             logging.error("Missing Google API key (cfg.gcp.service_key or env GOOGLE_API_KEY)")
             return 1
         # Outputs produced by the road_points pipeline
-        points_gpkg = cache_dir / _cfg_get(cfg, "datasets.streetview.output_points", "points.gpkg")
         metadata_csv = cache_dir / _cfg_get(cfg, "datasets.streetview.output_panorama_metadata", "pano_metadata.csv")
-
-        # Image settings
-        images_dir = Path(_cfg_get(cfg, "datasets.streetview.images.dir", str(cache_dir / "sv_images")))
-        size = _cfg_get(cfg, "datasets.streetview.images.size", "640x640")
-        fov = int(_cfg_get(cfg, "datasets.streetview.images.fov", 90))
-        headings = _cfg_get(cfg, "datasets.streetview.images.headings", [0, 90, 180, 270])
-        img_qps = float(_cfg_get(cfg, "datasets.streetview.images.qps", 5.0))
         ### ________________
         # call the panorama metadata pipeline
-        # after it call the google store pipeline
+        if not metadata_csv.exists():
+            logging.info("🚦 Starting panorama metadata pipeline")
+            run_panorama_metadata_pipeline(cfg)
+        # after it call the Google store pipeline
+        logging.info("🚦 Starting Google Store pipeline")
+        run_google_store_pipeline(cfg)
         logging.info("✅ Job finished")
         return 0
     except Exception:
         logging.exception("❌ Job failed")
         return 1
-@hydra.main(version_base=None, config_path="conf", config_name="config")
+@hydra.main(version_base=None, config_path="../conf", config_name="config")
 def hydra_main(cfg:DictConfig):
     return run_job(cfg)
 

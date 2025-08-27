@@ -24,6 +24,6 @@ streetview:
     fov: 90
     pitch: 0
     size: "640x640"
-    max_requests: 2000
+    max_requests: 1000
     dir: "google-streetview"
-    manifest: "cache/downloaded_images.csv"
+    manifest: "cache/mannheim_google_saved.csv" #"cache/downloaded_images.csv"
