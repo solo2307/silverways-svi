@@ -196,7 +196,7 @@ def process_pano_csv(csv_path:Path,
                 if manifest_writer and (pano_id,int(heading)) in seen_pairs:
                     saved_count += 1
                     continue
-                image_path, saved = store.fetch_image_with_pano(pano_id, heading=int(heading))
+                image_path, _ = store.fetch_image_with_pano(pano_id, heading=int(heading))
                 if manifest_writer and image_path is not None:
                     request_count += 1
                     saved_count += 1
