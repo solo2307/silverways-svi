@@ -7,7 +7,6 @@ import logging
 import hydra
 from omegaconf import DictConfig
 from datetime import datetime
-from ohsome import OhsomeClient
 import requests
 
 # ---------- Global Logger Setup ----------
