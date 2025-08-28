@@ -77,9 +77,9 @@ def download_from_minio(
         except S3Error as err:
             print(f"❌ Failed to download {obj.object_name}: {err}")
 
-def main(cfg: DictConfig):
-    bucket_name = cfg.minio.bucket_name #"heigit-silverways"
-    remote_folder = cfg.minio.folder_name #"mannheim/google-streetview"
+def main_back_up_images(cfg: DictConfig):
+    bucket_name = cfg.minio.bucket_name
+    remote_folder = cfg.minio.folder_name
     local_folder =f"{cfg.storage.sds}/{cfg.datasets.svi_dir}"
 
     minio_id = cfg.minio.silverways_account
@@ -92,7 +92,6 @@ def main(cfg: DictConfig):
         secret_key=minio_key,
         secure=True
     )
-
     try:
         ensure_bucket_exists(client, bucket_name)
         upload_folder(client, bucket_name, local_folder, remote_folder, allowed_extensions)
@@ -102,7 +101,7 @@ def main(cfg: DictConfig):
         print("General Error:", err)
 @hydra.main(version_base=None, config_path="../../conf", config_name="config")
 def hydra_main(cfg: DictConfig):
-    return main(cfg)
+    return main_back_up_images(cfg)
 
 if __name__ == "__main__":
     hydra_main()
