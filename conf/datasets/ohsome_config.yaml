@@ -1,0 +1,11 @@
+osm:
+  # Input GeoJSON file with the region boundary
+  region_path: "data/osm_admin_level_6_mannheim.geojson"
+  # Output directory for downloaded OSM data
+  dir: "osm"
+  # OSM features to download
+  roads: True
+  buildings: True
+  # list of point of interest features to download
+  amenities: ['bench',]
+  food: ['bar', 'cafe','fast_food', 'pub', 'biergarten','food_court', 'ice_cream', 'restaurant']

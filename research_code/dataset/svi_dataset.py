@@ -327,13 +327,13 @@ if __name__ == "__main__":
     show_overlay_row_with_indices(
         base_path=input_dir,
         prediction_path=pred_dir,
-        uuid="j9ORkgM5xdMPClKke-6O5Q",
+        uuid="Xjkv0ulzBWKTJjMuWDjjBg",
         indices_csv='cache/google-prediction/indices.csv',
         alpha=0.4
     )
     # show_overlay_row(
     #     base_path="cache/google-streetview",
     #     prediction_path="cache/google-prediction",
-    #     uuid="j9ORkgM5xdMPClKke-6O5Q",
+    #     uuid="Xjkv0ulzBWKTJjMuWDjjBg",
     #     alpha=0.4
     # )

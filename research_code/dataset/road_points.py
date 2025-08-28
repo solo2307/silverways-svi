@@ -13,6 +13,7 @@ from shapely.geometry import LineString
 from shapely.ops import unary_union
 from omegaconf import DictConfig
 import hydra
+from research_code.ops.ohsome_store import run_road_pipeline
 
 # ----------------------------------------------------
 from logging.handlers import RotatingFileHandler
@@ -50,46 +51,6 @@ def build_session(timeout: float = 6.0) -> requests.Session:
     s.request = _wrapped  # type: ignore
     return s
 # ----------------------------------------------------
-
-# def get_panorama_metadata(lat: float, lon: float, api_key: str) -> dict:
-#     url = "https://maps.googleapis.com/maps/api/streetview/metadata"
-#     params = {
-#         "location": f"{lat},{lon}",
-#         "key": api_key
-#     }
-#
-#     try:
-#         response = requests.get(url, params=params, timeout=5)
-#         response.raise_for_status()
-#         data = response.json()
-#
-#         if data.get("status") == "OK":
-#             return {
-#                 "pano_lat": data["location"]["lat"],
-#                 "pano_lon": data["location"]["lng"],
-#                 "pano_id": data.get("pano_id"),
-#                 "date": data.get("date"),
-#                 "status": "OK"
-#             }
-#         else:
-#             return {
-#                 "pano_lat": None,
-#                 "pano_lon": None,
-#                 "pano_id": None,
-#                 "date": None,
-#                 "status": data.get("status", "UNKNOWN")
-#             }
-#
-#     except Exception as e:
-#         logging.error(f"Error retrieving panorama for ({lat}, {lon}): {e}")
-#         return {
-#             "pano_lat": None,
-#             "pano_lon": None,
-#             "pano_id": None,
-#             "date": None,
-#             "status": f"ERROR: {e}"
-#         }
-
 def get_panorama_metadata(lat: float, lon: float, api_key: str, session: requests.Session) -> dict:
     url = "https://maps.googleapis.com/maps/api/streetview/metadata"
     params = {"location": f"{lat},{lon}", "key": api_key}
@@ -106,58 +67,7 @@ def get_panorama_metadata(lat: float, lon: float, api_key: str, session: request
     except Exception as e:
         logging.exception("Street View metadata request failed")
         return {"pano_lat": None, "pano_lon": None, "pano_id": None, "date": None, "status": f"ERROR: {e}"}
-# def retreat_panorama_metadata(
-#     gdf_points: gpd.GeoDataFrame,
-#     api_key: str,
-#     output_csv: str,
-#     delay: float = 0.1
-# ):
-#     gdf_wgs = gdf_points.to_crs("EPSG:4326").reset_index(drop=True)
-#     output_path = Path(output_csv)
-#     output_path.parent.mkdir(parents=True, exist_ok=True)
-#
-#     fieldnames = ["uuid", "lat", "lon", "osm_id", "pano_lat", "pano_lon", "pano_id", "date", "status"]
-#
-#     existing_coords = set()
-#     file_exists = output_path.exists()
-#     is_empty = not file_exists or output_path.stat().st_size == 0
-#
-#     if file_exists:
-#         with open(output_path, "r", newline='', encoding='utf-8') as f:
-#             reader = csv.DictReader(f)
-#             for row in reader:
-#                 try:
-#                     existing_coords.add((float(row["lat"]), float(row["lon"])))
-#                 except Exception:
-#                     continue
-#
-#     with open(output_path, "a", newline='', encoding='utf-8') as f:
-#         writer = csv.DictWriter(f, fieldnames=fieldnames)
-#         if is_empty:
-#             writer.writeheader()
-#
-#         for row in tqdm(gdf_wgs.itertuples(), total=len(gdf_wgs), desc="📷 Fetching pano metadata"):
-#             lat, lon = row.geometry.y, row.geometry.x
-#             if (lat, lon) in existing_coords:
-#                 continue
-#
-#             meta = get_panorama_metadata(lat, lon, api_key)
-#
-#             writer.writerow({
-#                 "uuid": getattr(row, "uuid", str(uuid.uuid4())),
-#                 "lat": lat,
-#                 "lon": lon,
-#                 "osm_id": getattr(row, "osm_id", None),
-#                 "pano_lat": meta["pano_lat"],
-#                 "pano_lon": meta["pano_lon"],
-#                 "pano_id": meta["pano_id"],
-#                 "date": meta["date"],
-#                 "status": meta["status"]
-#             })
-#
-#             time.sleep(delay)
-#
-#     logging.info(f"✅ Panorama metadata written to: {output_csv}")
+
 def retreat_panorama_metadata(gdf_points: gpd.GeoDataFrame, api_key: str, output_csv: str,
                               delay: float = 0.1, qps: float = 10.0, request_timeout: float = 6.0):
     gdf_wgs = gdf_points.to_crs(4326).reset_index(drop=True)
@@ -318,6 +228,14 @@ def run_pipeline(cfg: DictConfig):
         merge_dist = float(cfg.datasets.streetview.merge_distance)
         delay = float(cfg.datasets.streetview.request_delay)
 
+        try:
+            if not input_file.exists():
+                logging.info("🚀 Retreating road network...")
+                run_road_pipeline(cfg)
+        except Exception as e:
+            logging.error(f"Road pipeline failed: {e}")
+            return 1
+
         logging.info("🚀 Starting road point generation...")
         if not out_points.exists():
             roads = RoadDataset(str(input_file))
@@ -343,7 +261,6 @@ def run_pipeline(cfg: DictConfig):
 
 @hydra.main(version_base=None, config_path="../../conf", config_name="config")
 def hydra_main(cfg: DictConfig) -> int:
-    # do not SystemExit here; just return
     return run_pipeline(cfg)
 
 if __name__ == "__main__":

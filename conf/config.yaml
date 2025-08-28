@@ -1,16 +1,17 @@
 defaults:
   - _self_
-  - datasets: streetview_config
+  - datasets/streetview_config
+  - datasets/ohsome_config
 
 #  Hydra parameters
 hydra:
   run:
     dir: ./outputs/${hydra.job.name}/${now:%Y-%m-%d_%H-%M-%S}
-# Credentials for DataBase
+# Credentials for SilverWays DataBases and OHSOME API
 minio:
-  endpoint: "hot.storage.heigit.org"
   ohsome_account: ${oc.env:OHSOME_MINIO_ACCESS_ID}
   ohsome_key:  ${oc.env:OHSOME_MINIO_ACCESS_KEY}
+  endpoint: "hot.storage.heigit.org"
   silverways_account:  ${oc.env:HOT_MINIO_ACCESS_ID}
   silverways_key:  ${oc.env:HOT_MINIO_ACCESS_KEY}
   bucket_name: "heigit-silverways"
@@ -20,7 +21,7 @@ minio:
 gee:
   project_id: "aa-automatization"
 gcp:
-    service_key: ${oc.env:GOOGLE_API_KEY_JOH}
+  service_key: ${oc.env:GOOGLE_API_KEY_JOH}
 
 # Local Storage
 storage:

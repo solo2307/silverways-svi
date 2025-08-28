@@ -50,7 +50,7 @@ dependencies:
       - ultralyticsplus==0.1.0
       - googlemaps
       - streetview
-      - duckdb==1.2.0
+#      - duckdb==1.2.0
       - minio==7.2.15
       - mercantile==1.2.1
       - geemap==0.32.0
