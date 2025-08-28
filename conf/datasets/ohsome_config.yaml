@@ -7,5 +7,5 @@ osm:
   roads: True
   buildings: True
   # list of point of interest features to download
-  amenities: ['bench',]
+  amenities: ['bench']
   food: ['bar', 'cafe','fast_food', 'pub', 'biergarten','food_court', 'ice_cream', 'restaurant']

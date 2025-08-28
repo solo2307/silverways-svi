@@ -13,10 +13,10 @@ import requests
 # ---------- Global Logger Setup ----------
 def setup_logger():
     timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
-    log_file = Path(f"logs/osm-duckdb-store-{timestamp}.log")
+    log_file = Path(f"logs/ohsome-store-{timestamp}.log")
     log_file.parent.mkdir(parents=True, exist_ok=True)
 
-    logger = logging.getLogger("OsmDuckDBLogger")
+    logger = logging.getLogger("OhsomeAPILogger")
     logger.setLevel(logging.INFO)
 
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
