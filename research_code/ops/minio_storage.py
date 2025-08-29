@@ -80,7 +80,7 @@ def download_from_minio(
 def main_back_up_images(cfg: DictConfig):
     bucket_name = cfg.minio.bucket_name
     remote_folder = cfg.minio.folder_name
-    local_folder =f"{cfg.storage.sds}/{cfg.datasets.svi_dir}"
+    local_folder =f"{cfg.storage.sds}/{cfg.datasets.streetview.images.dir}"
 
     minio_id = cfg.minio.silverways_account
     minio_key = cfg.minio.silverways_key
