@@ -15,7 +15,20 @@
 
 ---
 ## 📂 Project Structure
+- **conf/** → Hydra configuration files  
+  - `config.yaml` = main config  
+  - `datasets/` = dataset configs (OSM, streetview, etc.)  
+  - `indicators/` = YAML configs for elderly-friendly indicators  
 
+- **research_code/** → Core Python modules  
+  - `indicators/` = indicator implementations (slope, canopy, benches, etc.)  
+  - `jobs/` = orchestration scripts (streetview_job, indicator_job, etc.)  
+  - `ops/` = helper modules (downloads, APIs, storage)  
+
+- **cache/** → Local cache for intermediate outputs  
+- **data/** → Raw data storage
+- **environment.yaml** → Python dependencies
+- **.env** → Environment variables (e.g., API keys)
 ---
 ## ⚙️ Getting Started
 
