@@ -52,7 +52,7 @@ features:
     enabled: false
     pois_file: "${storage.sds}/osm/pois.gpkg"
     categories: ["pharmacy", "doctors", "shop", "cafe"]
-    max_distance: 1000       # meters; services within 1 km are relevant
+    max_distance: 1000  # meters; services within 1 km are relevant
     buffer: 150
     out_file: "${storage.cache}/services.gpkg"
 

@@ -1,6 +1,6 @@
 osm:
   # Input GeoJSON file with the region boundary
-  region_path: "data/osm_admin_level_6_mannheim.geojson"
+  region_path: "data/mannheim.geojson"
   # Output directory for downloaded OSM data
   dir: "osm"
   # OSM features to download

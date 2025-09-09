@@ -77,7 +77,7 @@ def geohash_inside_polygon(polygon, precision=5):
 # Example usage
 if __name__ == "__main__":
     # Define a polygon (using a simple square polygon as an example)
-    polygon = gpd.read_file('../../data/osm_admin_level_6_mannheim.geojson').iloc[0]['geometry']
+    polygon = gpd.read_file('../../data/mannheim.geojson').iloc[0]['geometry']
     precision = 6
     gdf = geohash_inside_polygon(polygon=polygon, precision=precision)
     gdf.to_file(f'../../cache/mannheim_geohash_{precision}.geojson', driver='GeoJSON')
