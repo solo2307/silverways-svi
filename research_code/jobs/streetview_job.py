@@ -36,7 +36,7 @@ import hydra
 from omegaconf import DictConfig,OmegaConf
 
 
-from research_code.dataset.road_points import run_pipeline as run_panorama_metadata_pipeline
+from research_code.misc.road_points import run_pipeline as run_panorama_metadata_pipeline
 from research_code.ops.google_store import run_pipeline as run_google_store_pipeline
 # --------------------------- helpers ---------------------------
 def _cfg_get(cfg: DictConfig, dotted: str, default=None):
@@ -77,7 +77,7 @@ def run_job(cfg: DictConfig) -> int:
     except Exception:
         logging.exception("❌ Job failed")
         return 1
-@hydra.main(version_base=None, config_path="../conf", config_name="config")
+@hydra.main(version_base=None, config_path="../../conf", config_name="config")
 def hydra_main(cfg:DictConfig):
     return run_job(cfg)
 

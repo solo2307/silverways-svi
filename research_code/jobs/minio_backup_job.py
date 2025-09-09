@@ -26,7 +26,7 @@ def run_job(cfg: DictConfig) -> int:
     except Exception:
         logging.exception("❌ Job failed")
         return 1
-@hydra.main(version_base=None, config_path="../conf", config_name="config")
+@hydra.main(version_base=None, config_path="../../conf", config_name="config")
 def hydra_main(cfg:DictConfig):
     return run_job(cfg)
 

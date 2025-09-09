@@ -94,7 +94,7 @@ def run_job(cfg: DictConfig) -> int:
 
 # --------------------------- Hydra entrypoint ---------------------------
 
-@hydra.main(version_base=None, config_path="../conf", config_name="config")
+@hydra.main(version_base=None, config_path="../../conf", config_name="config")
 def hydra_main(cfg: DictConfig):
     return run_job(cfg)
 

@@ -22,8 +22,10 @@
 
 - **research_code/** → Core Python modules  
   - `indicators/` = indicator implementations (slope, canopy, benches, etc.)  
-  - `jobs/` = orchestration scripts (streetview_job, indicator_job, etc.)  
+  - `jobs/` = orchestration jobs (streetview_job, indicator_job, etc.)  
   - `ops/` = helper modules (downloads, APIs, storage)  
+  - `misc/` = utility functions (geospatial, image processing)
+  - `dl/` = deep learning models for Street View Imagery
 
 - **cache/** → Local cache for intermediate outputs  
 - **data/** → Raw data storage

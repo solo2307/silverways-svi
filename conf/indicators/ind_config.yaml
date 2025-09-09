@@ -11,19 +11,19 @@ features:
     max_slope_threshold: 6   # percent; above this = barrier
 
   canopy_coverage:
-    enabled: true
+    enabled: false
     raster_file: "${storage.sds}/chm.tif"
     out_file: "${storage.cache}/canopy_coverage.gpkg"
     threshold: 2.0 # height of a minimal tree
     buffer: 3 # meters
 
   greeness_svi:
-    enabled: true
+    enabled: false
     directory: "${storage.sds}/google-predictions"
     out_file: "${storage.cache}/greeness_svi.gpkg"
 
   sky_svi:
-    enabled: true
+    enabled: false
     directory: "${storage.sds}/google-predictions"
     out_file: "${storage.cache}/sky-svi.gpkg"
 
@@ -42,14 +42,14 @@ features:
     buffer: 20
 
   benches:
-    enabled: true
+    enabled: false
     benches_file: "${storage.sds}/osm/benches.gpkg"
     search_radius: 50
     buffer: 20
     out_file: "${storage.cache}/benches.gpkg"
 
   services:
-    enabled: true
+    enabled: false
     pois_file: "${storage.sds}/osm/pois.gpkg"
     categories: ["pharmacy", "doctors", "shop", "cafe"]
     max_distance: 1000       # meters; services within 1 km are relevant

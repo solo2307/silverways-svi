@@ -1,0 +1,116 @@
+import typer
+from pathlib import Path
+from omegaconf import OmegaConf
+import logging
+
+from research_code.jobs import ohsome_job, streetview_job, streetview_inference_job, indicators_job
+
+# ---------------------------------------------------------------------
+# Setup
+# ---------------------------------------------------------------------
+app = typer.Typer(help="🚶‍♀️ SilverWays CLI – Walkability Indicators for Elderly Pedestrians")
+
+osm_app = typer.Typer(help="OSM data utilities")
+streetview_app = typer.Typer(help="Street View image download and inference")
+indicators_app = typer.Typer(help="Walkability indicators pipeline")
+
+app.add_typer(osm_app, name="osm")
+app.add_typer(streetview_app, name="streetview")
+app.add_typer(indicators_app, name="indicators")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s"
+)
+
+
+# ---------------------------------------------------------------------
+# OSM commands
+# ---------------------------------------------------------------------
+@osm_app.command("fetch")
+def fetch_osm(city: str, out: Path = Path("roads.gpkg")):
+    """
+    Download road network from OSM for a given city.
+    """
+    try:
+        logging.info(f"📥 Fetching OSM roads for {city} -> {out}")
+        ohsome_job.run(city=city, out_file=out)
+        logging.info("✅ OSM fetch completed")
+    except Exception as e:
+        logging.error(f"❌ Failed to fetch OSM data: {e}")
+        raise typer.Exit(code=1)
+
+
+# ---------------------------------------------------------------------
+# Street View commands
+# ---------------------------------------------------------------------
+@streetview_app.command("download")
+def download(config: Path = Path("conf/datasets/streetview_config.yaml")):
+    """
+    Download Street View panoramas based on config.
+    """
+    try:
+        cfg = OmegaConf.load(config)
+        logging.info(f"📷 Downloading Street View images using {config}")
+        streetview_job.run(cfg)
+        logging.info("✅ Street View download completed")
+    except Exception as e:
+        logging.error(f"❌ Failed to download Street View images: {e}")
+        raise typer.Exit(code=1)
+
+
+@streetview_app.command("infer")
+def infer(input: Path = Path("cache/streetview"), output: Path = Path("cache/svi_indices.csv")):
+    """
+    Run deep learning inference on Street View images to extract green/sky indices.
+    """
+    try:
+        logging.info(f"🧠 Running inference on {input} -> {output}")
+        streetview_inference_job.run(input, output)
+        logging.info("✅ Inference completed")
+    except Exception as e:
+        logging.error(f"❌ Failed to run inference: {e}")
+        raise typer.Exit(code=1)
+
+
+# ---------------------------------------------------------------------
+# Indicator commands
+# ---------------------------------------------------------------------
+@indicators_app.command("run")
+def run_indicators(config: Path = Path("conf/indicators/ind_config.yaml")):
+    """
+    Run elderly walkability indicators based on config.
+    """
+    try:
+        cfg = OmegaConf.load(config)
+        logging.info(f"⚙️ Running indicators from {config}")
+        indicators_job.run(cfg)
+        logging.info("✅ Indicators computed successfully")
+    except Exception as e:
+        logging.error(f"❌ Failed to run indicators: {e}")
+        raise typer.Exit(code=1)
+
+
+@indicators_app.command("merge")
+def merge_indicators(
+    config: Path = Path("conf/indicators/ind_config.yaml"),
+    out: Path = Path("cache/roads_enriched.gpkg")
+):
+    """
+    Merge all per-indicator outputs into a single enriched road file.
+    """
+    try:
+        cfg = OmegaConf.load(config)
+        logging.info(f"📑 Merging indicator outputs into {out}")
+        indicators_job.merge(cfg, out)  # you'd implement merge() inside indicators_job
+        logging.info("✅ Merge completed")
+    except Exception as e:
+        logging.error(f"❌ Failed to merge indicators: {e}")
+        raise typer.Exit(code=1)
+
+
+# ---------------------------------------------------------------------
+# Entrypoint
+# ---------------------------------------------------------------------
+if __name__ == "__main__":
+    app()
