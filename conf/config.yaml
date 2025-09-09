@@ -2,6 +2,7 @@ defaults:
   - _self_
   - datasets/streetview_config
   - datasets/ohsome_config
+  - indictors/ind_config
 
 #  Hydra parameters
 hydra:

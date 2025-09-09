@@ -1,0 +1,54 @@
+# Input file of the road network
+roads_file: "data/roads.gpkg"
+colum_id: "osm_id"
+
+# Lis of indicators
+features:
+  slope:
+    enabled: true
+    dem_file: "cache/mannheim_dem.tif"
+    out_file: "cache/roads_with_slope.gpkg"
+    max_slope_threshold: 6   # percent; above this = barrier
+
+  canopy_coverage:
+    enabled: true
+    raster_file: "data/chm.tif"
+    out_file: "cache/canopy_coverage.gpkg"
+    threshold: 2.0
+
+  greeness_svi:
+    enabled: true
+    directory: "google-predicitons"
+    out_file: "cache/greeness_svi.gpkg"
+
+  sky_svi:
+    enabled: true
+    directory: "google-predicitions"
+    out_file: "cache/sky-svi.gpkg"
+
+  accessibility:
+    enabled: false
+    input_file: "osm_anemities.gpkg"
+    out_file: "cache/heat_stress.gpkg"
+
+  safety:
+    enabled: false
+    input_file: "street_lighting.gpkg"
+    raster_file: "nighttime_light.tif"
+    out_file: "cache/safety.gpkg"
+
+  benches:
+    enabled: true
+    benches_file: "${storage.sds}/osm/benches.gpkg"
+    search_radius: 50
+
+  services:
+    enabled: true
+    pois_file: "${storage.sds}/osm/pois.gpkg"
+    categories: ["pharmacy", "doctors", "shop", "cafe"]
+    max_distance: 1000       # meters; services within 1 km are relevant
+
+
+
+
+
