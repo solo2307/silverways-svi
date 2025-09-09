@@ -56,7 +56,9 @@ class GreenIndex_SVI:
         green_index = (np.sum(prediction == 4) + np.sum(prediction == 9) + np.sum(prediction == 17)) / total_size
 
         return [green_index, tree_index, bush_index, grass_index]
+def add_greeness_svi(roads, directory):
 
+    return
 if __name__ == "__main__":
     data_dir = Path("cache/google-streetview")
     output_file =Path( "cache/green_indices.csv")

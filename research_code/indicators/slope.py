@@ -72,7 +72,7 @@ def compute_slope(dem_file: str) -> Tuple[np.ndarray, rasterio.Affine, str]:
 
     logging.info("Slope computed successfully.")
     return slope_deg, transform, crs
-def assign_slope_to_roads(dem_file, roads_file)-> gpd.GeoDataFrame:
+def add_slope(dem_file, roads_file)-> gpd.GeoDataFrame:
     """
     Assign slope statistics (mean, max, min) to road segments.
 

@@ -7,7 +7,7 @@ import rasterio.features
 import shapely
 from shapely.geometry import shape
 
-def add_canopy_fraction(roads: gpd.GeoDataFrame,
+def add_canopy_coverage(roads: gpd.GeoDataFrame,
                         raster_file: str,
                         threshold: float = 2.0) -> gpd.GeoDataFrame:
     """
