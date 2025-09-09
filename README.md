@@ -47,7 +47,7 @@ Preinstall mamba and run the following code
 #### Example of Google Street View Imagery
 Step 0: Prepare Road Network File (If  available, skip this step) 
 
-Run `osm_job.py` to retreat road network from OSM.
+Run `ohsome_job.py` to retreat road network from OSM.
 
 Step 1: Configure the Pipeline
 Edit the YAML file in `conf/config.yml`:
