@@ -3,7 +3,7 @@ name = "silverways"
 version = "0.1.0"
 description = "Repository for elderly-friendly walkability indicators"
 authors = [
-    { name = "Your Name", email = "your@email.com" }
+    { name = "Yulia Grinblat", email = "yulia.grinblat@heigit.org" }
 ]
 readme = "README.md"
 license = { text = "MIT" }
@@ -57,6 +57,7 @@ dependencies = [
     "mit-semseg==1.0.0",
     "typer==0.17.4",
     "python-dotenv",
+    "types-requests",
 ]
 
 [project.scripts]

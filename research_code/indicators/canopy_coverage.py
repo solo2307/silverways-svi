@@ -9,7 +9,10 @@ from shapely.geometry import shape
 
 
 def add_canopy_coverage(
-    roads: gpd.GeoDataFrame, raster_file: str, threshold: float = 2.0
+    roads: gpd.GeoDataFrame,
+    raster_file: str,
+    threshold: float = 2.0,
+    # buffer: float = 0.0,
 ) -> gpd.GeoDataFrame:
     """
     Computes fraction of each road segment intersecting canopy cover.
@@ -22,7 +25,8 @@ def add_canopy_coverage(
         Path to canopy height model (CHM) raster.
     threshold : float
         Minimum canopy height in meters to count as canopy.
-
+    buffer : float
+        Buffer distance in meters around Canopy polygons.
     Returns
     -------
     roads : GeoDataFrame
