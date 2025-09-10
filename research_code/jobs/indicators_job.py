@@ -20,12 +20,14 @@ Config
 import logging
 import importlib
 from pathlib import Path
+from typing import Optional
 
 import geopandas as gpd
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
 # --------------------------- helpers ---------------------------
+
 
 def _cfg_get(cfg: DictConfig, dotted: str, default=None):
     try:
@@ -34,7 +36,7 @@ def _cfg_get(cfg: DictConfig, dotted: str, default=None):
         return default
 
 
-def _setup_logging(logfile: Path = None):
+def _setup_logging(logfile: Optional[Path] = None):
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s | %(levelname)s | %(message)s",
@@ -47,7 +49,8 @@ def _setup_logging(logfile: Path = None):
 
 # --------------------------- main pipeline ---------------------------
 
-def run_job(cfg: DictConfig) -> int:
+
+def run(cfg: DictConfig) -> int:
     """Run all enabled road indicators as defined in config."""
     try:
         roads_file = Path(_cfg_get(cfg, "indicators.roads_file"))
@@ -94,9 +97,10 @@ def run_job(cfg: DictConfig) -> int:
 
 # --------------------------- Hydra entrypoint ---------------------------
 
+
 @hydra.main(version_base=None, config_path="../../conf", config_name="config")
 def hydra_main(cfg: DictConfig):
-    return run_job(cfg)
+    return run(cfg)
 
 
 # --------------------------- CLI ---------------------------

@@ -12,13 +12,13 @@ Dependencies:
     - rasterstats
 """
 import logging
-from pathlib import Path
 from typing import Tuple
 
 import geopandas as gpd
 import numpy as np
 import rasterio
 from rasterstats import zonal_stats
+
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
@@ -26,6 +26,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
+
 
 # ---------------------------------------------------------------------------
 # Core functions
@@ -63,7 +64,7 @@ def compute_slope(dem_file: str) -> Tuple[np.ndarray, rasterio.Affine, str]:
     try:
         dzdx = (np.roll(dem, -1, axis=1) - np.roll(dem, 1, axis=1)) / (2 * dx)
         dzdy = (np.roll(dem, -1, axis=0) - np.roll(dem, 1, axis=0)) / (2 * dy)
-        slope_rad = np.arctan(np.sqrt(dzdx ** 2 + dzdy ** 2))
+        slope_rad = np.arctan(np.sqrt(dzdx**2 + dzdy**2))
         slope_deg = np.degrees(slope_rad).astype("float32")
         slope_deg = np.ma.array(slope_deg, mask=dem.mask)  # preserve nodata mask
     except Exception as e:
@@ -72,7 +73,9 @@ def compute_slope(dem_file: str) -> Tuple[np.ndarray, rasterio.Affine, str]:
 
     logging.info("Slope computed successfully.")
     return slope_deg, transform, crs
-def add_slope(dem_file, roads_file)-> gpd.GeoDataFrame:
+
+
+def add_slope(dem_file, roads_file) -> gpd.GeoDataFrame:
     """
     Assign slope statistics (mean, max, min) to road segments.
 
@@ -112,20 +115,20 @@ def add_slope(dem_file, roads_file)-> gpd.GeoDataFrame:
             affine=transform,
             stats=["mean", "max", "min"],
             nodata=-9999,
-            geojson_out=True
+            geojson_out=True,
         )
     except Exception as e:
         logging.error(f"Zonal stats computation failed: {e}")
         raise
 
-
     gdf_slope = gpd.GeoDataFrame.from_features(stats, crs=gdf_roads.crs)
     return gdf_slope
+
 
 if __name__ == "__main__":
     # Example usage
     dem_file = "cache/mannheim_dem.tif"
     roads_file = "/Volumes/ygrin/silverways/mannheim/osm/roads_mannheim.gpkg"
 
-    gdf_slope = assign_slope_to_roads(dem_file, roads_file)
+    gdf_slope = add_slope(dem_file, roads_file)
     print(gdf_slope.shape)

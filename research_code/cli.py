@@ -3,12 +3,19 @@ from pathlib import Path
 from omegaconf import OmegaConf
 import logging
 
-from research_code.jobs import ohsome_job, streetview_job, streetview_inference_job, indicators_job
+from research_code.jobs import (
+    ohsome_job,
+    streetview_job,
+    streetview_inference_job,
+    indicators_job,
+)
 
 # ---------------------------------------------------------------------
 # Setup
 # ---------------------------------------------------------------------
-app = typer.Typer(help="🚶‍♀️ SilverWays CLI – Walkability Indicators for Elderly Pedestrians")
+app = typer.Typer(
+    help="🚶‍♀️ SilverWays CLI – Walkability Indicators for Elderly Pedestrians"
+)
 
 osm_app = typer.Typer(help="OSM data utilities")
 streetview_app = typer.Typer(help="Street View image download and inference")
@@ -19,22 +26,23 @@ app.add_typer(streetview_app, name="streetview")
 app.add_typer(indicators_app, name="indicators")
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s"
+    level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s"
 )
 
 
 # ---------------------------------------------------------------------
 # OSM commands
 # ---------------------------------------------------------------------
-@osm_app.command("fetch")
-def fetch_osm(city: str, out: Path = Path("roads.gpkg")):
+@osm_app.command("fetch-osm")
+def fetch_osm(config: Path = Path("conf/config.yaml")):
     """
     Download road network from OSM for a given city.
     """
     try:
-        logging.info(f"📥 Fetching OSM roads for {city} -> {out}")
-        ohsome_job.run(city=city, out_file=out)
+        logging.info(f"📥 Fetching OSM roads for ROI using {config}")
+        # Load the Hydra config as DictConfig
+        cfg = OmegaConf.load(config)
+        ohsome_job.run(cfg)
         logging.info("✅ OSM fetch completed")
     except Exception as e:
         logging.error(f"❌ Failed to fetch OSM data: {e}")
@@ -45,7 +53,7 @@ def fetch_osm(city: str, out: Path = Path("roads.gpkg")):
 # Street View commands
 # ---------------------------------------------------------------------
 @streetview_app.command("download")
-def download(config: Path = Path("conf/datasets/streetview_config.yaml")):
+def download(config: Path = Path("conf/config.yaml")):
     """
     Download Street View panoramas based on config.
     """
@@ -60,13 +68,14 @@ def download(config: Path = Path("conf/datasets/streetview_config.yaml")):
 
 
 @streetview_app.command("infer")
-def infer(input: Path = Path("cache/streetview"), output: Path = Path("cache/svi_indices.csv")):
+def infer(config: Path = Path("conf/config.yaml")):
     """
     Run deep learning inference on Street View images to extract green/sky indices.
     """
     try:
-        logging.info(f"🧠 Running inference on {input} -> {output}")
-        streetview_inference_job.run(input, output)
+        logging.info(f"🧠 Running inference on Street View images using {config}")
+        cfg = OmegaConf.load(config)
+        streetview_inference_job.run(cfg)
         logging.info("✅ Inference completed")
     except Exception as e:
         logging.error(f"❌ Failed to run inference: {e}")
@@ -94,7 +103,7 @@ def run_indicators(config: Path = Path("conf/indicators/ind_config.yaml")):
 @indicators_app.command("merge")
 def merge_indicators(
     config: Path = Path("conf/indicators/ind_config.yaml"),
-    out: Path = Path("cache/roads_enriched.gpkg")
+    out: Path = Path("cache/roads_enriched.gpkg"),
 ):
     """
     Merge all per-indicator outputs into a single enriched road file.
@@ -102,7 +111,7 @@ def merge_indicators(
     try:
         cfg = OmegaConf.load(config)
         logging.info(f"📑 Merging indicator outputs into {out}")
-        indicators_job.merge(cfg, out)  # you'd implement merge() inside indicators_job
+        indicators_job.run(cfg)  # you'd implement merge() inside indicators_job
         logging.info("✅ Merge completed")
     except Exception as e:
         logging.error(f"❌ Failed to merge indicators: {e}")

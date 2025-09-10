@@ -10,12 +10,16 @@ import cv2
 import numpy as np
 from scipy.io import loadmat
 from mit_semseg.utils import colorEncode
-from research_code.dl.green_model_svi import SegModelPSPNet
 import matplotlib.pyplot as plt
-import cv2
+
 import matplotlib
-matplotlib.use('TkAgg')
-def show_overlay_row_with_indices(base_path: str, prediction_path: str, uuid: str, indices_csv: Path, alpha=0.6):
+
+matplotlib.use("TkAgg")
+
+
+def show_overlay_row_with_indices(
+    base_path: str, prediction_path: str, uuid: str, indices_csv: Path, alpha=0.6
+):
     """
     Show 4 directions (0, 90, 180, 270) of a panorama image with prediction overlay,
     and display sky, green, tree, bush, grass indices as titles.
@@ -32,7 +36,7 @@ def show_overlay_row_with_indices(base_path: str, prediction_path: str, uuid: st
     df = pd.read_csv(indices_csv)
 
     # Filter rows for this uuid prefix (starts with uuid)
-    df_filtered = df[df['pano_id'].str.startswith(uuid)]
+    df_filtered = df[df["pano_id"].str.startswith(uuid)]
 
     # Prepare to plot 4 images
     angles = [0, 90, 180, 270]
@@ -53,25 +57,31 @@ def show_overlay_row_with_indices(base_path: str, prediction_path: str, uuid: st
         pred_rgb = cv2.cvtColor(pred, cv2.COLOR_BGR2RGB)
 
         if img_rgb.shape != pred_rgb.shape:
-            pred_rgb = cv2.resize(pred_rgb, (img_rgb.shape[1], img_rgb.shape[0]), interpolation=cv2.INTER_NEAREST)
+            pred_rgb = cv2.resize(
+                pred_rgb,
+                (img_rgb.shape[1], img_rgb.shape[0]),
+                interpolation=cv2.INTER_NEAREST,
+            )
 
         # Get indices for this specific image from CSV
         row_id = f"{uuid}_{angle}"
-        row = df_filtered[df_filtered['pano_id'] == row_id]
+        row = df_filtered[df_filtered["pano_id"] == row_id]
 
         if not row.empty:
-            sky_idx = row['sky_index'].values[0]
-            green_idx = row['green_index'].values[0]
-            tree_idx = row['tree_index'].values[0]
-            bush_idx = row['bush_index'].values[0]
-            grass_idx = row['grass_index'].values[0]
+            sky_idx = row["sky_index"].values[0]
+            green_idx = row["green_index"].values[0]
+            tree_idx = row["tree_index"].values[0]
+            bush_idx = row["bush_index"].values[0]
+            grass_idx = row["grass_index"].values[0]
 
-            title = (f"{angle}°\n"
-                     f"Sky: {sky_idx:.3f}\n"
-                     f"Green: {green_idx:.3f}\n"
-                     f"Tree: {tree_idx:.3f}\n"
-                     f"Bush: {bush_idx:.3f}\n"
-                     f"Grass: {grass_idx:.3f}")
+            title = (
+                f"{angle}°\n"
+                f"Sky: {sky_idx:.3f}\n"
+                f"Green: {green_idx:.3f}\n"
+                f"Tree: {tree_idx:.3f}\n"
+                f"Bush: {bush_idx:.3f}\n"
+                f"Grass: {grass_idx:.3f}"
+            )
         else:
             title = f"{angle}°\nNo indices"
 
@@ -82,6 +92,8 @@ def show_overlay_row_with_indices(base_path: str, prediction_path: str, uuid: st
 
     plt.tight_layout()
     plt.show()
+
+
 def show_overlay_row(base_path: str, prediction_path: str, uuid: str, alpha=0.6):
     """
     Show 4 directions (0, 90, 180, 270) of a panorama image with prediction overlay.
@@ -109,7 +121,11 @@ def show_overlay_row(base_path: str, prediction_path: str, uuid: str, alpha=0.6)
         pred_rgb = cv2.cvtColor(pred, cv2.COLOR_BGR2RGB)
 
         if img_rgb.shape != pred_rgb.shape:
-            pred_rgb = cv2.resize(pred_rgb, (img_rgb.shape[1], img_rgb.shape[0]), interpolation=cv2.INTER_NEAREST)
+            pred_rgb = cv2.resize(
+                pred_rgb,
+                (img_rgb.shape[1], img_rgb.shape[0]),
+                interpolation=cv2.INTER_NEAREST,
+            )
 
         axes[i].imshow(img_rgb)
         axes[i].imshow(pred_rgb, alpha=alpha)
@@ -119,8 +135,11 @@ def show_overlay_row(base_path: str, prediction_path: str, uuid: str, alpha=0.6)
     plt.tight_layout()
     plt.show()
 
+
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -132,12 +151,15 @@ def calculate_indicators(prediction: np.ndarray):
     sky_index = np.sum(prediction == 2) / total_size
 
     # Optionally, if you want combined green vegetation index:
-    green_index = (np.sum(prediction == 4) + np.sum(prediction == 9) + np.sum(prediction == 17)) / total_size
+    green_index = (
+        np.sum(prediction == 4) + np.sum(prediction == 9) + np.sum(prediction == 17)
+    ) / total_size
 
     return [sky_index, green_index, tree_index, bush_index, grass_index]
 
+
 class GSVIDataSet:
-    def __init__(self, input_dir: str, pred_dir: str,model):
+    def __init__(self, input_dir: str, pred_dir: str, model):
         """
         Initializes the dataset processor for semantic segmentation.
 
@@ -152,10 +174,9 @@ class GSVIDataSet:
         self.predictions = self.output_dir / "indices.csv"
         if self.predictions.exists():
             self.predictions.unlink()
-        self.items = sorted([
-            f for f in self.input_dir.glob("*.jpg")
-            if not f.stem.startswith("CAoS")
-        ])
+        self.items = sorted(
+            [f for f in self.input_dir.glob("*.jpg") if not f.stem.startswith("CAoS")]
+        )
 
         # Ensure the output directory exists
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -170,7 +191,9 @@ class GSVIDataSet:
         """Return the number of images in the dataset."""
         return len(self.items)
 
-    def process_item(self, image_path: Path, save_pred: bool = True, gvi: bool = False) -> np.ndarray:
+    def process_item(
+        self, image_path: Path, save_pred: bool = True, gvi: bool = False
+    ) -> np.ndarray:
         """
         Process a single image, run segmentation, and save the output.
 
@@ -187,7 +210,7 @@ class GSVIDataSet:
             pred = self.model.predict(str(image_path))
             indicators = calculate_indicators(pred)
             # Convert prediction to color
-            color_map = loadmat(f"{self.model_path}/color150.mat")['colors']
+            color_map = loadmat(f"{self.model_path}/color150.mat")["colors"]
             pred_color = colorEncode(pred, color_map)
 
             # Ensure correct format
@@ -200,14 +223,21 @@ class GSVIDataSet:
                 # pred_color = self.highlight_all_classes(pred, self.model_path)
             if save_pred:
                 # Save indicators results to output file
-                output_indices = ['pano_id','sky_index', 'green_index', 'tree_index', 'bush_index', 'grass_index']
+                output_indices = [
+                    "pano_id",
+                    "sky_index",
+                    "green_index",
+                    "tree_index",
+                    "bush_index",
+                    "grass_index",
+                ]
                 output_file = self.output_dir / "indices.csv"
                 if not output_file.exists():
-                    with open(output_file, 'w') as f:
+                    with open(output_file, "w") as f:
                         f.write(f"{','.join(output_indices)}\n")
                         f.write(f"{image_path.stem},{','.join(map(str, indicators))}\n")
                 else:
-                    with open(output_file, 'a') as f:
+                    with open(output_file, "a") as f:
                         f.write(f"{image_path.stem},{','.join(map(str, indicators))}\n")
 
                 output_path = self.output_dir / f"{image_path.stem}.png"
@@ -236,7 +266,7 @@ class GSVIDataSet:
         vegetation_colors = {
             "tree": ([4, 200, 3], [255, 0, 0]),  # Red for trees
             "grass": ([4, 250, 7], [0, 255, 0]),  # Green for grass
-            "bushes": ([204, 255, 4], [0, 255, 255])  # Cyan for bushes
+            "bushes": ([204, 255, 4], [0, 255, 255]),  # Cyan for bushes
         }
 
         combined_image = np.zeros_like(image)
@@ -287,7 +317,7 @@ class GSVIDataSet:
         from scipy.io import loadmat
         from mit_semseg.utils import colorEncode
 
-        color_map = loadmat(f"{model_path}/color150.mat")['colors']
+        color_map = loadmat(f"{model_path}/color150.mat")["colors"]
 
         if color_map.max() <= 1.0:
             color_map = (color_map * 255).astype(np.uint8)
@@ -295,6 +325,7 @@ class GSVIDataSet:
             color_map = color_map.astype(np.uint8)
 
         return colorEncode(pred, color_map)
+
     def process_all(self, save_pred: bool = True, gvi: bool = False):
         """
         Process all images in the dataset.
@@ -312,28 +343,27 @@ class GSVIDataSet:
 
 if __name__ == "__main__":
     # Example of Usage
-    model_path = Path('data/models')
-    input_dir = 'cache/google-streetview'
-    pred_dir = 'cache/google-prediction'
-
+    model_path = Path("data/models")
+    input_dir = "cache/google-streetview"
+    pred_dir = "cache/google-prediction"
+    """
     # model = SegModelPSPNet(model_path)
     # dataset = GSVIDataSet(input_dir=input_dir, pred_dir=pred_dir, model=model)
     #
     # # Process all images
     # dataset.process_all(save_pred=True, gvi=False)
-
-    #Example of overlay
+    # Example of overlay
     # Visualize with indices overlayed in titles
-    show_overlay_row_with_indices(
-        base_path=input_dir,
-        prediction_path=pred_dir,
-        uuid="Xjkv0ulzBWKTJjMuWDjjBg",
-        indices_csv='cache/google-prediction/indices.csv',
-        alpha=0.4
-    )
+    # show_overlay_row_with_indices(
+    #     base_path=input_dir,
+    #     prediction_path=pred_dir,
+    #     uuid="Xjkv0ulzBWKTJjMuWDjjBg",
+    #     indices_csv="cache/google-prediction/indices.csv",
+    #     alpha=0.4,
+    # )
     # show_overlay_row(
     #     base_path="cache/google-streetview",
     #     prediction_path="cache/google-prediction",
     #     uuid="Xjkv0ulzBWKTJjMuWDjjBg",
     #     alpha=0.4
-    # )
+    # )"""

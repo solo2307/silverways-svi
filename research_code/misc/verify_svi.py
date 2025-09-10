@@ -2,7 +2,9 @@ import os
 from PIL import Image, UnidentifiedImageError
 from tqdm import tqdm
 import hydra
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
+
+
 def check_images(directory, delete_corrupt=False):
     corrupt_images = []
     total = 0
@@ -10,13 +12,15 @@ def check_images(directory, delete_corrupt=False):
     # Walk through all files in the directory
     for root, _, files in os.walk(directory):
         for file in tqdm(files, desc="Checking images"):
-            if file.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff')):
+            if file.lower().endswith(
+                (".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff")
+            ):
                 total += 1
                 file_path = os.path.join(root, file)
                 try:
                     with Image.open(file_path) as img:
                         img.verify()  # Verify image without loading it completely
-                except (UnidentifiedImageError, OSError) as e:
+                except (UnidentifiedImageError, OSError):
                     corrupt_images.append(file_path)
                     print(f"Corrupt: {file_path}")
                     if delete_corrupt:
@@ -26,6 +30,7 @@ def check_images(directory, delete_corrupt=False):
     print(f"Found {len(corrupt_images)} corrupt images.")
 
     return corrupt_images
+
 
 def run_verification(cfg: DictConfig):
     # 🔧 Set your directory here
@@ -37,9 +42,12 @@ def run_verification(cfg: DictConfig):
         with open("../../cache/corrupt_images.txt", "w") as f:
             for path in corrupt:
                 f.write(path + "\n")
+
+
 @hydra.main(version_base=None, config_path="../../conf", config_name="config")
-def hydra_main(cfg:DictConfig):
+def hydra_main(cfg: DictConfig):
     return run_verification(cfg)
+
 
 if __name__ == "__main__":
     hydra_main()

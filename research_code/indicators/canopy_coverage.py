@@ -7,9 +7,10 @@ import rasterio.features
 import shapely
 from shapely.geometry import shape
 
-def add_canopy_coverage(roads: gpd.GeoDataFrame,
-                        raster_file: str,
-                        threshold: float = 2.0) -> gpd.GeoDataFrame:
+
+def add_canopy_coverage(
+    roads: gpd.GeoDataFrame, raster_file: str, threshold: float = 2.0
+) -> gpd.GeoDataFrame:
     """
     Computes fraction of each road segment intersecting canopy cover.
 
@@ -33,12 +34,12 @@ def add_canopy_coverage(roads: gpd.GeoDataFrame,
     # 1. Read raster
     with rasterio.open(raster_file) as src:
         chm = src.read(1, masked=True)
-        mask = chm > threshold   # canopy = True where CHM > threshold
+        mask = chm > threshold  # canopy = True where CHM > threshold
 
         # 2. Convert canopy raster mask → polygons
-        canopy_shapes = list(rasterio.features.shapes(
-            mask.astype("uint8"), transform=src.transform
-        ))
+        canopy_shapes = list(
+            rasterio.features.shapes(mask.astype("uint8"), transform=src.transform)
+        )
 
     # 3. Build canopy polygons (union)
     canopy_polys = [shape(geom) for geom, val in canopy_shapes if val == 1]

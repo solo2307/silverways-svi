@@ -1,7 +1,8 @@
 import geopandas as gpd
-from shapely.geometry import Polygon, Point
+from shapely.geometry import Polygon
 import geohash
 import shapely
+
 
 def geohash_inside_polygon(polygon, precision=5):
     unchecked = set()
@@ -15,7 +16,6 @@ def geohash_inside_polygon(polygon, precision=5):
         polygons = [polygon.exterior.coords]
 
     for bbox_pts in polygons:  # Iterate over each polygon or MultiPolygon
-
         # Encode all polygon points to geohash at specified precision
         for pt in bbox_pts:
             tst_gh = geohash.encode(pt[1], pt[0], precision)  # Ensure lat/lon order
@@ -30,13 +30,19 @@ def geohash_inside_polygon(polygon, precision=5):
 
             # Decode the geohash to a lat/lon point
             lat, lon = geohash.decode(this)
-            point = Point(lon, lat)  # Point is in (lon, lat) order
+            # point = Point(lon, lat)  # Point is in (lon, lat) order
 
             # Check if the geohash boundary (bbox) intersects with the polygon
             lat_min, lon_min, lat_max, lon_max = geohash.bbox(this).values()
-            geohash_bbox = Polygon([(lon_min, lat_min), (lon_min, lat_max),
-                                    (lon_max, lat_max), (lon_max, lat_min),
-                                    (lon_min, lat_min)])
+            geohash_bbox = Polygon(
+                [
+                    (lon_min, lat_min),
+                    (lon_min, lat_max),
+                    (lon_max, lat_max),
+                    (lon_max, lat_min),
+                    (lon_min, lat_min),
+                ]
+            )
 
             if bbox.intersects(geohash_bbox):
                 inside.add(this)
@@ -53,21 +59,27 @@ def geohash_inside_polygon(polygon, precision=5):
     for gh in inside:
         # Get bounding box of the geohash
         bbox = geohash.bbox(gh)
-        lat_min = bbox['s']
-        lon_min = bbox['w']
-        lat_max = bbox['n']
-        lon_max = bbox['e']
+        lat_min = bbox["s"]
+        lon_min = bbox["w"]
+        lat_max = bbox["n"]
+        lon_max = bbox["e"]
 
         # Create a Polygon representing the bounding box of the geohash
-        geohash_polygon = Polygon([(lon_min, lat_min), (lon_min, lat_max),
-                                   (lon_max, lat_max), (lon_max, lat_min),
-                                   (lon_min, lat_min)])
+        geohash_polygon = Polygon(
+            [
+                (lon_min, lat_min),
+                (lon_min, lat_max),
+                (lon_max, lat_max),
+                (lon_max, lat_min),
+                (lon_min, lat_min),
+            ]
+        )
 
         # Append geohash and its bounding box as a polygon
-        geohash_polygons.append({'geohash': gh, 'geometry': geohash_polygon})
+        geohash_polygons.append({"geohash": gh, "geometry": geohash_polygon})
 
         # Append geohash and its bounding box as a polygon
-        geohash_polygons.append({'geohash': gh, 'geometry': geohash_polygon})
+        geohash_polygons.append({"geohash": gh, "geometry": geohash_polygon})
 
     gdf = gpd.GeoDataFrame.from_dict(geohash_polygons, crs=4326)
 
@@ -77,8 +89,7 @@ def geohash_inside_polygon(polygon, precision=5):
 # Example usage
 if __name__ == "__main__":
     # Define a polygon (using a simple square polygon as an example)
-    polygon = gpd.read_file('../../data/mannheim.geojson').iloc[0]['geometry']
+    polygon = gpd.read_file("../../data/mannheim.geojson").iloc[0]["geometry"]
     precision = 6
     gdf = geohash_inside_polygon(polygon=polygon, precision=precision)
-    gdf.to_file(f'../../cache/mannheim_geohash_{precision}.geojson', driver='GeoJSON')
-
+    gdf.to_file(f"../../cache/mannheim_geohash_{precision}.geojson", driver="GeoJSON")
