@@ -54,7 +54,7 @@ If you don’t want to use **mamba/conda**, you can install the package directly
 This will install all dependencies from pyproject.toml and expose the CLI tool **_silverways_**.
 
 ## 🚀 Usage
-### Manual Job Run (mamba/conda) - example of Google Street View Imagery
+### 🐍 Manual Job Run (mamba/conda) - example of Google Street View Imagery
 
 Step 1: Prepare Road Network File (If  available, skip this step)
 
