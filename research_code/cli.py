@@ -2,6 +2,8 @@ import typer
 from pathlib import Path
 from omegaconf import OmegaConf
 import logging
+from dotenv import load_dotenv
+import os
 
 from research_code.jobs import (
     ohsome_job,
@@ -13,6 +15,13 @@ from research_code.jobs import (
 # ---------------------------------------------------------------------
 # Setup
 # ---------------------------------------------------------------------
+# load environment variables from .env automatically
+# load_dotenv()
+# Explicitly load data-ingestion/.env instead of default
+dotenv_path = Path(__file__).parent.parent / ".env"
+if dotenv_path.exists():
+    load_dotenv(dotenv_path)
+
 app = typer.Typer(
     help="🚶‍♀️ SilverWays CLI – Walkability Indicators for Elderly Pedestrians"
 )
@@ -33,6 +42,21 @@ logging.basicConfig(
 # ---------------------------------------------------------------------
 # OSM commands
 # ---------------------------------------------------------------------
+@app.command("apikey-check")
+def api_key_check():
+    """
+    Check if the Google API key is available in the environment (.env).
+    """
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if api_key:
+        typer.secho("✅ Google API key is set!", fg=typer.colors.GREEN)
+    else:
+        typer.secho(
+            "❌ Google API key is missing. Please set it in your .env file.",
+            fg=typer.colors.RED,
+        )
+
+
 @osm_app.command("fetch-osm")
 def fetch_osm(config: Path = Path("conf/config.yaml")):
     """

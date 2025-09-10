@@ -22,7 +22,7 @@ minio:
 gee:
   project_id: "aa-automatization"
 gcp:
-  service_key: ${oc.env:GOOGLE_API_KEY_JOH}
+  service_key: ${oc.env:GOOGLE_API_KEY}
 
 # Local Storage
 storage:
