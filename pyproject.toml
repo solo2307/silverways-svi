@@ -1,7 +1,7 @@
 [project]
 name = "silverways"
 version = "0.1.0"
-description = "ETL pipeline for elderly-friendly walkability indicators"
+description = "Repository for elderly-friendly walkability indicators"
 authors = [
     { name = "Your Name", email = "your@email.com" }
 ]
@@ -56,7 +56,6 @@ dependencies = [
     "geemap==0.32.0",
     "mit-semseg==1.0.0",
     "typer==0.17.4",
-#    "ohsome",
 ]
 
 [project.scripts]
@@ -68,3 +67,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 88
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["research_code*"]
