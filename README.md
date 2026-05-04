@@ -55,5 +55,81 @@ conda activate silverways-gpu
 
 3. For CLI commands
 ```bash 
-pip isntall -e . --no-deps 
+python pip isntall -e . --no-deps 
 ```
+
+## CLI usage notes
+```bash 
+silverways --help
+```
+
+Download models:
+```bash
+silverways download pspnet
+silverways download all 
+```
+Crop panorama images:
+```bash
+silverways generate-pano-crops \
+  --input-dir data/pano \
+  --output-dir data/crop \
+  --headings 0,90,180,270 \
+  --fov-degrees 90 \
+  --trim-top-ratio 0.08 \
+  --trim-bottom-ratio 0.15
+```
+All user-facing commands use hyphens, not underscores.
+
+Run inference on crops:
+
+```bash
+silverways run-pspnet --config conf/models/pspnet.yaml
+silverways run-yolo --config conf/models/yolo.yaml
+silverways run-mask2former --config conf/models/mask2former_mapillary.yaml
+silverways run-grounded-sam --config conf/models/grounded_sam.yaml
+```
+
+## Config YAML files
+
+Each model is controlled by a YAML file in:
+
+```text
+conf/models/
+```
+
+These files define:
+- input_dir       where input images come from
+- output_dir      where outputs are saved
+- recursive       whether to search inside subfolders
+-limit           how many images to process; use 1 for testing
+- device          cpu, cuda, or auto
+- model           model weights / model name  local directory
+- outputs         which output files to save
+
+Example:
+```yaml
+input_dir: data/crop
+output_dir: outputs/yolo
+recursive: false
+limit: 1
+device: auto
+
+model:
+  weights: models/yolo11l.pt
+
+predict:
+  conf: 0.35
+  iou: 0.60
+  imgsz: 640
+  target_classes:
+    - bench
+
+outputs:
+  save_annotated: true
+  save_json: true
+  save_txt: false
+```
+
+`limit: 1` for a quick trest run,
+`device: cpu` to force CPU inference, 
+`device: cuda` to force GPU inference, or `device: auto` to automatically use GPU if available.
