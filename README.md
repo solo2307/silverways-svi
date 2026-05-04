@@ -35,6 +35,9 @@ models/                       Downloaded model weights, not committed
 outputs/                      Prediction outputs, not committed
 ```
 ## Setup
+Install either Conda or Mamba first.
+
+Mamba is recommended because it is faster for solving Conda environments, but regular Conda also works. Mamba is compatible with most Conda commands, so the commands below can usually be swapped one-for-one. See the official Mamba installation docs: https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html
 
 1. Clone the repository:
 
@@ -44,7 +47,7 @@ git clone https://github.com/solo2307/silverways-svi.git
 2. Create a Conda environment:
 For CPU users:
 ```bash 
-mamba env create -f environment-cpu.yaml
+conda env create -f environment-cpu.yaml
 conda activate silverways-cpu 
 ``` 
 For GPU users: 
