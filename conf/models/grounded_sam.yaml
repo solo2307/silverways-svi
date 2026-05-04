@@ -1,26 +1,26 @@
 input_dir: data/pano
 output_dir: outputs/grounded_sam
-recursive: true
+recursive: false
 limit: null
 device: auto
 
 grounding_dino:
-  model_id: IDEA-Research/grounding-dino-tiny
+  name_or_path: IDEA-Research/grounding-dino-tiny
+  local_dir: models/grounding_dino_tiny
+
+sam2:
+  weights: models/sam2_b.pt
+  imgsz: 1024
+
+prompt:
   text_labels:
     - tree
     - grass
     - bush
-    - building
-    - car
-    - person
-    - bicycle
   box_threshold: 0.35
   text_threshold: 0.25
 
-sam:
-  enabled: true
-  model_id: facebook/sam-vit-base
-
 outputs:
-  save_boxes_json: true
+  save_json: true
   save_masks: true
+  save_annotated: true

@@ -1,4 +1,4 @@
-input_dir: data/pano
+input_dir: data/crop
 output_dir: outputs/pspnet
 recursive: true
 limit: null
