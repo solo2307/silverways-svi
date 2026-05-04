@@ -1,21 +1,33 @@
 """
 Generate cropped heading views from panoramic Street View images.
 
-This script is a small development utility. It reads panorama images from
-`data/pano`, splits each panorama into heading crops, and saves the crops into
-`data/crop`.
+This utility reads panorama images from `data/pano`, splits each panorama into
+heading crops, optionally trims distorted top/bottom regions, optionally resizes
+each crop to a maximum size, and saves the crops into `data/crop`.
+
+Processing order:
+
+    1. crop panorama by heading
+    2. trim top/bottom
+    3. resize final crop if --max-crop-size is provided
 
 Example:
 
-    python scripts/generate_pano_crops.py \
+    silverways generate-pano-crops \
       --input-dir data/pano \
       --output-dir data/crop \
       --headings 0,90,180,270 \
-      --fov-degrees 90
+      --fov-degrees 90 \
+      --trim-top-ratio 0.08 \
+      --trim-bottom-ratio 0.15 \
+      --max-crop-size 1600
+
+If --max-crop-size is omitted, crops are saved at full size.
 
 The generated crops can then be used as input for PSPNet, YOLO, Grounding DINO,
 SAM2, Mask2Former, or other image models.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -66,6 +78,15 @@ def main() -> None:
         help="Fraction to remove from the bottom of each crop.",
     )
     parser.add_argument(
+        "--max-crop-size",
+        type=int,
+        default=None,
+        help=(
+            "Maximum pixel size of the longest side of each saved crop. "
+            "If omitted, crops are saved at full size."
+        ),
+    )
+    parser.add_argument(
         "--recursive",
         action="store_true",
         help="Search input directory recursively.",
@@ -79,6 +100,7 @@ def main() -> None:
         fov_degrees=args.fov_degrees,
         trim_top_ratio=args.trim_top_ratio,
         trim_bottom_ratio=args.trim_bottom_ratio,
+        max_crop_size=args.max_crop_size,
         recursive=args.recursive,
     )
 
@@ -86,8 +108,8 @@ def main() -> None:
     saved_paths = dataset.save_all_views(output_dir)
 
     print(f"Panoramas found: {len(dataset)}")
-    print(f"Crops saved: {len(saved_paths)}")
-    print(f"Output directory: {output_dir}")
+    print(f"Crops saved: {len(saved_paths)} in {output_dir}")
+
 
 
 if __name__ == "__main__":

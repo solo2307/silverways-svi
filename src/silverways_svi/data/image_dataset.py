@@ -9,25 +9,6 @@ from PIL import Image
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp"}
 
-def resize_max_side(image: Image.Image, max_side: int | None) -> Image.Image:
-    """Resize image so the longest side is at most max_side.
-
-    If max_side is None, the image is returned unchanged.
-    """
-    if max_side is None:
-        return image
-
-    width, height = image.size
-    current_max_side = max(width, height)
-
-    if current_max_side <= max_side:
-        return image
-
-    scale = max_side / current_max_side
-    new_width = int(round(width * scale))
-    new_height = int(round(height * scale))
-
-    return image.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
 @dataclass(frozen=True)
 class ImageItem:
@@ -41,9 +22,9 @@ class ImageItem:
     def stem(self) -> str:
         return self.path.stem
 
-    def load_rgb(self, max_side: int | None = None) -> Image.Image:
-        image = Image.open(self.path).convert("RGB")
-        return resize_max_side(image, max_side=max_side)
+    def load_rgb(self) -> Image.Image:
+        return Image.open(self.path).convert("RGB")
+
 
 
 

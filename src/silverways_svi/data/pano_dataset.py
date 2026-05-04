@@ -11,40 +11,23 @@ It converts each panorama into several horizontal heading views, for example:
         -> 270 degree crop
 
 The current implementation uses simple horizontal cropping. It does not perform
-true perspective projection. This is useful for testing model pipelines on
-panoramic Street View images because many computer vision models, such as YOLO,
-Grounding DINO, SAM2, and PSPNet, usually work better on regular image views
-than on a full 360-degree panorama.
+true perspective projection.
 
-In addition to horizontal cropping, this implementation can also trim a
-percentage of the image from the top and bottom. This is useful because
-panoramic Street View images often contain distorted content near the top
-and bottom, such as stitching artifacts, stretched sky, or vehicle/camera rig
-parts. Removing these regions can produce cleaner crops for downstream models.
+Processing order:
 
-Typical use:
+    1. horizontal heading crop
+    2. optional top/bottom trim
+    3. optional resize of the final crop
 
-    dataset = PanoramaDataset(
-        input_dir="data/pano",
-        headings=(0, 90, 180, 270),
-        fov_degrees=90,
-        trim_top_ratio=0.08,
-        trim_bottom_ratio=0.15,
-    )
+The optional resize is controlled by `max_crop_size`. If it is None, the crop is
+saved at full size. If it is an integer, the crop is resized so its longest
+dimension is at most that number of pixels while preserving aspect ratio.
 
-    dataset.save_all_views("data/crop")
-
-Expected output:
-
-    data/crop/
-        WE0VZ5B3_0.png
-        WE0VZ5B3_90.png
-        WE0VZ5B3_180.png
-        WE0VZ5B3_270.png
-
-Later, this simple crop logic can be replaced with true perspective projection
-if panorama distortion becomes a problem.
+This is useful because full-resolution panorama crops can be very large, for
+example 3600 x 3600 pixels, which can be too heavy for weak machines or memory
+intensive models such as PSPNet and Mask2Former.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -96,7 +79,6 @@ class PanoramaDataset:
     """Dataset for panoramic images.
 
     It turns each panorama into multiple horizontal crops.
-    This is simple cropping, not true perspective projection.
 
     Parameters
     ----------
@@ -112,6 +94,10 @@ class PanoramaDataset:
     trim_bottom_ratio:
         Fraction of the crop height to remove from the bottom.
         Example: 0.15 means remove 15 percent from the bottom.
+    max_crop_size:
+        Maximum pixel size of the longest side after crop + trim.
+        If None, the crop is saved at full size.
+        Example: 1600 means resize so max(width, height) <= 1600.
     recursive:
         Whether to search for images recursively.
     skip_prefixes:
@@ -125,6 +111,7 @@ class PanoramaDataset:
         fov_degrees: int = 90,
         trim_top_ratio: float = 0.0,
         trim_bottom_ratio: float = 0.0,
+        max_crop_size: int | None = None,
         recursive: bool = False,
         skip_prefixes: tuple[str, ...] = ("CAoS",),
     ) -> None:
@@ -133,6 +120,7 @@ class PanoramaDataset:
         self.fov_degrees = fov_degrees
         self.trim_top_ratio = trim_top_ratio
         self.trim_bottom_ratio = trim_bottom_ratio
+        self.max_crop_size = max_crop_size
         self.recursive = recursive
         self.skip_prefixes = skip_prefixes
 
@@ -149,6 +137,9 @@ class PanoramaDataset:
             raise ValueError(
                 "trim_top_ratio + trim_bottom_ratio must be less than 1.0"
             )
+
+        if self.max_crop_size is not None and self.max_crop_size <= 0:
+            raise ValueError("max_crop_size must be positive or None")
 
         self.paths = self._find_images()
 
@@ -211,15 +202,14 @@ class PanoramaDataset:
 
         crop = self._crop_wrapped(image, start_x, end_x)
         crop = self._trim_vertical(crop)
-
-        trimmed_width, trimmed_height = crop.size
+        crop = self._resize_crop(crop)
 
         return PanoramaView(
             pano_path=pano_path,
             heading=heading,
             image=crop,
             view_id=f"heading_{heading:03d}",
-            crop_box=(0, 0, trimmed_width, trimmed_height),
+            crop_box=(start_x % width, 0, end_x % width, height),
         )
 
     def _trim_vertical(self, image: Image.Image) -> Image.Image:
@@ -233,6 +223,23 @@ class PanoramaDataset:
         y2 = height - bottom_px
 
         return image.crop((0, y1, width, y2))
+
+    def _resize_crop(self, image: Image.Image) -> Image.Image:
+        """Resize crop so longest side is at most max_crop_size."""
+        if self.max_crop_size is None:
+            return image
+
+        width, height = image.size
+        current_size = max(width, height)
+
+        if current_size <= self.max_crop_size:
+            return image
+
+        scale = self.max_crop_size / current_size
+        new_width = int(round(width * scale))
+        new_height = int(round(height * scale))
+
+        return image.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
     @staticmethod
     def _crop_wrapped(image: Image.Image, start_x: int, end_x: int) -> Image.Image:

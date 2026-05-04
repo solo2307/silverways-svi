@@ -83,43 +83,14 @@ def download(
 
 @app.command("generate-pano-crops")
 def generate_pano_crops(
-    input_dir: Path = typer.Option(
-        Path("data/pano"),
-        "--input-dir",
-        "-i",
-        help="Directory containing panorama images.",
-    ),
-    output_dir: Path = typer.Option(
-        Path("data/crop"),
-        "--output-dir",
-        "-o",
-        help="Directory where cropped views will be saved.",
-    ),
-    headings: str = typer.Option(
-        "0,90,180,270",
-        "--headings",
-        help="Comma-separated headings, for example: 0,90,180,270.",
-    ),
-    fov_degrees: int = typer.Option(
-        90,
-        "--fov-degrees",
-        help="Horizontal field of view for each crop.",
-    ),
-    trim_top_ratio: float = typer.Option(
-        0.08,
-        "--trim-top-ratio",
-        help="Fraction to remove from the top of each crop.",
-    ),
-    trim_bottom_ratio: float = typer.Option(
-        0.15,
-        "--trim-bottom-ratio",
-        help="Fraction to remove from the bottom of each crop.",
-    ),
-    recursive: bool = typer.Option(
-        False,
-        "--recursive/--no-recursive",
-        help="Search panorama input directory recursively.",
-    ),
+    input_dir: Path = typer.Option(Path("data/pano"), "--input-dir", "-i"),
+    output_dir: Path = typer.Option(Path("data/crop"), "--output-dir", "-o"),
+    headings: str = typer.Option("0,90,180,270", "--headings"),
+    fov_degrees: int = typer.Option(90, "--fov-degrees"),
+    trim_top_ratio: float = typer.Option(0.08, "--trim-top-ratio"),
+    trim_bottom_ratio: float = typer.Option(0.15, "--trim-bottom-ratio"),
+    max_crop_size: int | None = typer.Option(None, "--max-crop-size"),
+    recursive: bool = typer.Option(False, "--recursive/--no-recursive"),
 ) -> None:
     """Generate heading crops from panorama images."""
     args = [
@@ -136,6 +107,9 @@ def generate_pano_crops(
         "--trim-bottom-ratio",
         str(trim_bottom_ratio),
     ]
+
+    if max_crop_size is not None:
+        args.extend(["--max-crop-size", str(max_crop_size)])
 
     if recursive:
         args.append("--recursive")

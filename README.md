@@ -58,7 +58,7 @@ conda activate silverways-gpu
 
 3. For CLI commands
 ```bash 
-python pip isntall -e . --no-deps 
+python pip install -e . --no-deps 
 ```
 
 ## CLI usage notes
@@ -79,7 +79,8 @@ silverways generate-pano-crops \
   --headings 0,90,180,270 \
   --fov-degrees 90 \
   --trim-top-ratio 0.08 \
-  --trim-bottom-ratio 0.15
+  --trim-bottom-ratio 0.15 \
+  --max-crop-size 1600
 ```
 All user-facing commands use hyphens, not underscores.
 

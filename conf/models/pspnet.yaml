@@ -1,7 +1,7 @@
 input_dir: /Users/yulia.grinblat/Documents/Git_repos/SilverWays/data-ingestion/cache/cyclomedia
 output_dir: outputs/pspnet
 recursive: true
-limit: 4
+limit: 1
 device: auto
 
 model:
