@@ -52,7 +52,6 @@ def read_yaml(path: Path) -> dict[str, Any]:
 
     return data
 
-
 def class_fraction(mask: np.ndarray, class_ids: int | list[int]) -> float:
     """Calculate fraction of pixels belonging to one or more class IDs."""
     if mask.size == 0:

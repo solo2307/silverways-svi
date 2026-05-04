@@ -1,7 +1,7 @@
-input_dir: data/crop
+input_dir: /Users/yulia.grinblat/Documents/Git_repos/SilverWays/data-ingestion/cache/cyclomedia
 output_dir: outputs/pspnet
 recursive: true
-limit: null
+limit: 4
 device: auto
 
 model:
@@ -21,8 +21,9 @@ model:
   padding_constant: 8
   segm_downsampling_rate: 8
 
+
 outputs:
-  save_color_mask: true
+  save_color_mask: false
   save_raw_prediction: true
   save_visualization: true
   save_metrics_csv: true
