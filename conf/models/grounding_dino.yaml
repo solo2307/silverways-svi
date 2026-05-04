@@ -1,0 +1,27 @@
+input_dir: data/crop
+output_dir: outputs/grounding_dino
+recursive: true
+limit: null
+device: auto
+
+model:
+  name_or_path: IDEA-Research/grounding-dino-tiny
+  local_dir: models/grounding_dino_tiny
+
+prompt:
+  text_labels:
+    - tree
+    - grass
+    - bush
+    - building
+    - car
+    - person
+    - bicycle
+    - sidewalk
+    - road
+  box_threshold: 0.35
+  text_threshold: 0.25
+
+outputs:
+  save_json: true
+  save_annotated: true

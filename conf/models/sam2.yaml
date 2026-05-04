@@ -1,0 +1,23 @@
+input_dir: data/pano
+output_dir: outputs/sam2
+recursive: true
+limit: null
+device: auto
+
+model:
+  # Options:
+  #   sam2_t.pt
+  #   sam2_s.pt
+  #   sam2_b.pt
+  #   sam2_l.pt
+  # Or store it locally:
+  #   models/sam2_b.pt
+  weights: models/sam2_b.pt
+
+predict:
+  imgsz: 1024
+
+outputs:
+  save_masks: true
+  save_json: true
+  save_annotated: true
