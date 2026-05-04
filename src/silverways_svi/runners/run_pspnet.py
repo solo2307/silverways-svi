@@ -12,7 +12,7 @@ from PIL import Image
 from tqdm import tqdm
 
 from silverways_svi.data.image_dataset import ImageDataset
-from silverways_svi.models.pspnet import PSPNetSegmenter
+from silverways_svi.models.pspnet import PSPNetSegmenter, make_options
 
 app = typer.Typer(help="Run PSPNet semantic segmentation on image folders.")
 
@@ -38,6 +38,7 @@ VIZ_COLORS = {
 
 
 def read_yaml(path: Path) -> dict[str, Any]:
+    """Read a YAML config file."""
     if not path.exists():
         raise FileNotFoundError(f"Config file not found: {path}")
 
@@ -51,6 +52,7 @@ def read_yaml(path: Path) -> dict[str, Any]:
 
 
 def class_fraction(mask: np.ndarray, class_ids: int | list[int]) -> float:
+    """Calculate fraction of pixels belonging to one or more class IDs."""
     if mask.size == 0:
         return 0.0
 
@@ -61,6 +63,7 @@ def class_fraction(mask: np.ndarray, class_ids: int | list[int]) -> float:
 
 
 def compute_metrics(mask: np.ndarray) -> dict[str, float]:
+    """Compute SVI semantic indicators from ADE20K class mask."""
     tree = class_fraction(mask, CLASS_IDS["tree"])
     grass = class_fraction(mask, CLASS_IDS["grass"])
     bush = class_fraction(mask, CLASS_IDS["bush"])
@@ -77,6 +80,7 @@ def compute_metrics(mask: np.ndarray) -> dict[str, float]:
 
 
 def colorize_mask(mask: np.ndarray) -> np.ndarray:
+    """Color selected ADE20K classes for quick visualization."""
     color = np.zeros((*mask.shape, 3), dtype=np.uint8)
 
     color[mask == CLASS_IDS["tree"]] = VIZ_COLORS["tree"]
@@ -96,6 +100,7 @@ def make_overlay(
     color_mask: np.ndarray,
     alpha: float = 0.55,
 ) -> np.ndarray:
+    """Overlay selected-class mask on top of the original image."""
     image_np = np.asarray(image.convert("RGB")).astype(np.float32)
     color_np = color_mask.astype(np.float32)
 
@@ -117,6 +122,7 @@ def save_visualization(
     output_path: Path,
     title: str,
 ) -> None:
+    """Save a three-panel visualization: original, overlay, mask."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     fig, axes = plt.subplots(3, 1, figsize=(7, 13))
@@ -139,6 +145,7 @@ def save_visualization(
 
 
 def append_metrics_csv(path: Path, row: dict[str, Any]) -> None:
+    """Append one metrics row to CSV, writing header if needed."""
     path.parent.mkdir(parents=True, exist_ok=True)
 
     file_exists = path.exists()
@@ -186,8 +193,18 @@ def infer(
         typer.echo(f"No images found in: {input_dir}")
         raise typer.Exit(code=0)
 
+    options = make_options(
+        fc_dim=int(model_cfg.get("fc_dim", 2048)),
+        num_class=int(model_cfg.get("num_class", 150)),
+        img_sizes=model_cfg.get("img_sizes", [300, 400, 500, 600]),
+        img_max_size=int(model_cfg.get("img_max_size", 1000)),
+        padding_constant=int(model_cfg.get("padding_constant", 8)),
+        segm_downsampling_rate=int(model_cfg.get("segm_downsampling_rate", 8)),
+    )
+
     segmenter = PSPNetSegmenter(
         model_path=model_cfg["local_dir"],
+        options=options,
         encoder_name=model_cfg.get("encoder", "resnet101"),
         decoder_name=model_cfg.get("decoder", "upernet"),
         device=device,
