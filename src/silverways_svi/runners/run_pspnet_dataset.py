@@ -38,7 +38,7 @@ class SVIdataset:
 
         :param input_dir: Directory containing input images.
         :param pred_dir: Directory where predictions will be saved.
-        :param model: Segmentation model instance.
+        :param model: Segmentation models instance.
         """
         self.input_dir = Path(input_dir)
         self.output_dir = Path(pred_dir)
@@ -91,7 +91,7 @@ class SVIdataset:
             # Load and validate the image
             logger.info(f"🔍 Processing: {image_path.name}...")
 
-            # Run segmentation model
+            # Run segmentation models
             pred = self.model.predict(str(image_path))
             indicators = calculate_indicators(pred)
             # Convert prediction to color
@@ -167,7 +167,7 @@ class SVIdataset:
         """
         Highlight selected semantic classes with predefined colors.
 
-        :param pred: 2D label array from segmentation model.
+        :param pred: 2D label array from segmentation models.
         :return: RGB image with selected classes highlighted.
         """
         output = np.zeros((*pred.shape, 3), dtype=np.uint8)
@@ -195,8 +195,8 @@ class SVIdataset:
         """
         Convert all class labels into their respective colors using the full color150.mat colormap.
 
-        :param pred: 2D label array from segmentation model.
-        :param model_path: Path to the model directory containing color150.mat.
+        :param pred: 2D label array from segmentation models.
+        :param model_path: Path to the models directory containing color150.mat.
         :return: RGB image with all classes colored.
         """
         from scipy.io import loadmat

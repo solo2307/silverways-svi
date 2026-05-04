@@ -10,7 +10,7 @@ import yaml
 from huggingface_hub import snapshot_download
 from ultralytics import SAM, YOLO
 
-app = typer.Typer(help="Download/check model files for SilverWays SVI.")
+app = typer.Typer(help="Download/check models files for SilverWays SVI.")
 
 
 def hf_token() -> str | None:
@@ -36,9 +36,9 @@ def download_hf_snapshot(
     repo_id: str,
     local_dir: str | Path,
     allow_patterns: list[str] | None = None,
-    repo_type: str = "model",
+    repo_type: str = "models",
 ) -> Path:
-    """Download files from a Hugging Face model repo."""
+    """Download files from a Hugging Face models repo."""
     local_dir = Path(local_dir)
     local_dir.mkdir(parents=True, exist_ok=True)
 
@@ -54,10 +54,10 @@ def download_hf_snapshot(
 
 
 def get_ultralytics_ckpt_path(model: Any, weight_name: str) -> Path | None:
-    """Try to recover the local checkpoint path after Ultralytics loads a model."""
+    """Try to recover the local checkpoint path after Ultralytics loads a models."""
     candidates = [
         getattr(model, "ckpt_path", None),
-        getattr(getattr(model, "model", None), "pt_path", None),
+        getattr(getattr(model, "models", None), "pt_path", None),
         weight_name,
     ]
 
@@ -77,7 +77,7 @@ def copy_ultralytics_weight_to_target(
     target_path: Path,
     model_type: str,
 ) -> Path:
-    """Download/cache an Ultralytics model and copy it to target_path."""
+    """Download/cache an Ultralytics models and copy it to target_path."""
     target_path.parent.mkdir(parents=True, exist_ok=True)
 
     if model_type == "yolo":
@@ -85,7 +85,7 @@ def copy_ultralytics_weight_to_target(
     elif model_type == "sam":
         model = SAM(weight_name)
     else:
-        raise ValueError(f"Unsupported Ultralytics model type: {model_type}")
+        raise ValueError(f"Unsupported Ultralytics models type: {model_type}")
 
     ckpt_path = get_ultralytics_ckpt_path(model, weight_name)
 
@@ -108,7 +108,7 @@ def copy_ultralytics_weight_to_target(
 def download_pspnet_from_config(config_path: Path) -> Path:
     """Download PSPNet weights from Hugging Face."""
     cfg = read_yaml(config_path)
-    model_cfg = cfg["model"]
+    model_cfg = cfg["models"]
 
     repo_id = model_cfg["hf_repo_id"]
     local_dir = model_cfg["local_dir"]
@@ -124,7 +124,7 @@ def download_pspnet_from_config(config_path: Path) -> Path:
 def download_mask2former_from_config(config_path: Path) -> Path:
     """Download Mask2Former weights from Hugging Face."""
     cfg = read_yaml(config_path)
-    model_cfg = cfg["model"]
+    model_cfg = cfg["models"]
 
     repo_id = model_cfg["name_or_path"]
     local_dir = model_cfg.get("local_dir", "models/mask2former_mapillary")
@@ -146,7 +146,7 @@ def check_yolo_from_config(config_path: Path) -> Path | str:
       weights: models/custom_best.pt
     """
     cfg = read_yaml(config_path)
-    model_cfg = cfg["model"]
+    model_cfg = cfg["models"]
 
     weights = str(model_cfg["weights"])
     weights_path = Path(weights)
@@ -185,7 +185,7 @@ def check_sam2_from_config(config_path: Path) -> Path | str:
       weights: models/sam2_l.pt
     """
     cfg = read_yaml(config_path)
-    model_cfg = cfg["model"]
+    model_cfg = cfg["models"]
 
     weights = str(model_cfg["weights"])
     weights_path = Path(weights)
@@ -220,7 +220,7 @@ def check_sam3_from_config(config_path: Path) -> Path:
     SAM3 is gated and must be downloaded manually.
     """
     cfg = read_yaml(config_path)
-    model_cfg = cfg["model"]
+    model_cfg = cfg["models"]
 
     weights = Path(model_cfg["weights"])
 
@@ -248,7 +248,7 @@ def pspnet(
         help="Path to PSPNet config YAML.",
     )
 ) -> None:
-    """Download PSPNet model files from Hugging Face."""
+    """Download PSPNet models files from Hugging Face."""
     output_dir = download_pspnet_from_config(config)
     typer.echo(f"Downloaded PSPNet files to: {output_dir}")
 
@@ -262,7 +262,7 @@ def mask2former(
         help="Path to Mask2Former config YAML.",
     )
 ) -> None:
-    """Download Mask2Former model files from Hugging Face."""
+    """Download Mask2Former models files from Hugging Face."""
     output_dir = download_mask2former_from_config(config)
     typer.echo(f"Downloaded Mask2Former files to: {output_dir}")
 
@@ -278,7 +278,7 @@ def yolo(
 ) -> None:
     """Check/download YOLO weights using Ultralytics."""
     result = check_yolo_from_config(config)
-    typer.echo(f"YOLO model ready: {result}")
+    typer.echo(f"YOLO models ready: {result}")
 
 
 @app.command()
@@ -292,7 +292,7 @@ def sam2(
 ) -> None:
     """Check/download SAM2 weights using Ultralytics."""
     result = check_sam2_from_config(config)
-    typer.echo(f"SAM2 model ready: {result}")
+    typer.echo(f"SAM2 models ready: {result}")
 
 
 @app.command()
@@ -318,15 +318,15 @@ def sam3(
 
 @app.command("all")
 def download_all() -> None:
-    """Download/check non-gated model files."""
+    """Download/check non-gated models files."""
     pspnet_dir = download_pspnet_from_config(Path("conf/models/pspnet.yaml"))
     typer.echo(f"Downloaded PSPNet files to: {pspnet_dir}")
 
     yolo_result = check_yolo_from_config(Path("conf/models/yolo.yaml"))
-    typer.echo(f"YOLO model ready: {yolo_result}")
+    typer.echo(f"YOLO models ready: {yolo_result}")
 
     sam2_result = check_sam2_from_config(Path("conf/models/sam2.yaml"))
-    typer.echo(f"SAM2 model ready: {sam2_result}")
+    typer.echo(f"SAM2 models ready: {sam2_result}")
 
     mask2former_dir = download_mask2former_from_config(
         Path("conf/models/mask2former_mapillary.yaml")

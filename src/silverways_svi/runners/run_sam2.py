@@ -10,15 +10,10 @@ import typer
 import yaml
 from tqdm import tqdm
 
-from silverways_svi.models.sam3 import (
-    SAM3Segmenter,
-    masks_to_numpy,
-    result_to_json,
-)
+from silverways_svi.data.image_dataset import ImageDataset
+from silverways_svi.models.sam2 import SAM2Segmenter, masks_to_numpy, result_to_json
 
-app = typer.Typer(help="Run SAM3 text-prompt segmentation on SVI images.")
-
-IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp"}
+app = typer.Typer(help="Run SAM2 on SVI images.")
 
 
 def read_yaml(path: Path) -> dict[str, Any]:
@@ -32,18 +27,6 @@ def read_yaml(path: Path) -> dict[str, Any]:
         raise ValueError(f"Config file is empty: {path}")
 
     return data
-
-
-def list_images(input_dir: Path, recursive: bool = True, limit: int | None = None) -> list[Path]:
-    globber = input_dir.rglob("*") if recursive else input_dir.glob("*")
-
-    images = sorted(
-        path
-        for path in globber
-        if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS
-    )
-
-    return images[:limit] if limit is not None else images
 
 
 def save_json(path: Path, payload: dict[str, Any]) -> None:
@@ -65,20 +48,19 @@ def save_annotated(path: Path, result: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
 
     plotted = result.plot()
-
-    # Ultralytics plot output is usually BGR-compatible for cv2.imwrite.
     cv2.imwrite(str(path), plotted)
 
 
 @app.command()
 def infer(
     config: Path = typer.Option(
-        Path("conf/models/sam3.yaml"),
+        Path("conf/models/sam2.yaml"),
         "--config",
         "-c",
-        help="Path to SAM3 config YAML.",
+        help="Path to SAM2 config YAML.",
     )
 ) -> None:
+    """Run SAM2 on a folder of SVI images."""
     cfg = read_yaml(config)
 
     input_dir = Path(cfg["input_dir"])
@@ -86,42 +68,50 @@ def infer(
     recursive = bool(cfg.get("recursive", True))
     limit = cfg.get("limit")
 
-    model_cfg = cfg["models"]
-    prompt_cfg = cfg["prompt"]
-    output_cfg = cfg["outputs"]
+    model_cfg = cfg["model"]
+    predict_cfg = cfg.get("predict", {})
+    output_cfg = cfg.get("outputs", {})
 
-    prompts = prompt_cfg["text"]
-    if isinstance(prompts, str):
-        prompts = [prompts]
-
-    segmenter = SAM3Segmenter(
-        weights=model_cfg["weights"],
-        conf=float(prompt_cfg.get("conf", 0.25)),
-        imgsz=int(prompt_cfg.get("imgsz", 1024)),
-        half=bool(prompt_cfg.get("half", False)),
-        device=str(cfg.get("device", "auto")),
-        save=False,
-    )
-
-    images = list_images(
+    dataset = ImageDataset(
         input_dir=input_dir,
         recursive=recursive,
-        limit=limit,
     )
 
-    if not images:
-        typer.echo(f"No images found in {input_dir}")
+    items = list(dataset)
+    if limit is not None:
+        items = items[: int(limit)]
+
+    if not items:
+        typer.echo(f"No images found in: {input_dir}")
         raise typer.Exit(code=0)
+
+    segmenter = SAM2Segmenter(
+        weights=model_cfg["weights"],
+        device=str(cfg.get("device", "auto")),
+        imgsz=int(predict_cfg.get("imgsz", 1024)),
+    )
+
+    points = predict_cfg.get("points")
+    labels = predict_cfg.get("labels")
+    bboxes = predict_cfg.get("bboxes")
+
+    if points is None and bboxes is None:
+        typer.echo(
+            "Warning: SAM2 usually works best with point or box prompts. "
+            "Running without prompts may produce no useful masks depending on the model behavior."
+        )
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    for image_path in tqdm(images, desc="SAM3"):
+    for item in tqdm(items, desc="SAM2"):
         prediction = segmenter.predict(
-            image_path=image_path,
-            text_prompts=prompts,
+            image_path=item.path,
+            points=points,
+            labels=labels,
+            bboxes=bboxes,
         )
 
-        stem = image_path.stem
+        stem = item.stem
 
         if output_cfg.get("save_json", True):
             save_json(

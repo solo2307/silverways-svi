@@ -5,7 +5,7 @@ limit: null
 device: auto
 
 model:
-  # Ultralytics model name or local .pt path.
+  # Ultralytics models name or local .pt path.
   #
   # Pretrained detection examples:
   #   yolo11n.pt

@@ -27,7 +27,7 @@ def check() -> None:
 def download(
     model: str = typer.Argument(..., help="Model to download: pspnet, yolo, or all."),
 ) -> None:
-    """Download model weights."""
+    """Download models weights."""
     run_python_script("scripts/download_models.py", [model])
 
 

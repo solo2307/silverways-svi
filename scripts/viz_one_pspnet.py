@@ -66,7 +66,7 @@ def ensure_model_files(model_dir: Path) -> Path:
     if missing:
         snapshot_download(
             repo_id=REPO_ID,
-            repo_type="model",
+            repo_type="models",
             local_dir=model_dir,
             allow_patterns=MODEL_FILES,
             token=os.environ.get("HF_TOKEN"),
@@ -226,9 +226,9 @@ def main() -> None:
         help="Directory where outputs will be saved.",
     )
     parser.add_argument(
-        "--model-dir",
+        "--models-dir",
         default="models/pspnet_svi_veg",
-        help="Directory for PSPNet model files.",
+        help="Directory for PSPNet models files.",
     )
     parser.add_argument("--device", default="auto", help="auto, cpu, cuda, or cuda:0.")
     parser.add_argument("--alpha", type=float, default=0.55, help="Overlay alpha.")

@@ -60,7 +60,7 @@ def infer(config: Path = Path("conf/models/mask2former_mapillary.yaml")) -> None
     output_dir.mkdir(parents=True, exist_ok=True)
 
     device = resolve_device(cfg.get("device", "auto"))
-    model_id = cfg["model"]["name_or_path"]
+    model_id = cfg["models"]["name_or_path"]
 
     console.print(f"Loading Mask2Former: {model_id}")
     processor = AutoImageProcessor.from_pretrained(model_id, token=hf_token())

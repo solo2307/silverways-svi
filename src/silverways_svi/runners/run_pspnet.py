@@ -59,11 +59,11 @@ def vegetation_metrics(mask: np.ndarray) -> dict[str, float]:
 class PSPNet:
     def __init__(self, cfg: dict, device: str) -> None:
         self.device = resolve_device(device)
-        model_cfg = cfg["model"]
+        model_cfg = cfg["models"]
 
         snapshot_download(
             repo_id=model_cfg["hf_repo_id"],
-            repo_type="model",
+            repo_type="models",
             local_dir=model_cfg["local_dir"],
             allow_patterns=model_cfg["files"],
             token=hf_token(),

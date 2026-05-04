@@ -24,13 +24,13 @@ console = Console()
 @app.command()
 def infer(config: Path = Path("conf/models/yolo.yaml")) -> None:
     cfg = read_yaml(config)
-    model_cfg = cfg["model"]
+    model_cfg = cfg["models"]
     weights = Path(model_cfg["weights"])
 
     if model_cfg.get("hf_repo_id") and not weights.exists():
         snapshot_download(
             repo_id=model_cfg["hf_repo_id"],
-            repo_type="model",
+            repo_type="models",
             local_dir=weights.parent,
             allow_patterns=model_cfg.get("hf_patterns", ["*.pt"]),
             token=hf_token(),
