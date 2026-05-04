@@ -140,7 +140,7 @@ def generate_pano_crops(
     if recursive:
         args.append("--recursive")
 
-    run_module("silverways_svi.runners.generate_pano_crops", args)
+    run_module("silverways_svi.generate_pano_crops", args)
 
 
 @app.command("viz-pspnet")
