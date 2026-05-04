@@ -1,24 +1,26 @@
-name: silverways-svi
+name: silverways-gpu
 channels:
   - conda-forge
   - pytorch
+  - nvidia
   - defaults
+
 dependencies:
   - python=3.11.4
   - pytorch::pytorch=2.1.2
   - pytorch::torchvision
+  - pytorch-cuda=12.1
   - numpy
   - pip
   - pytorch-lightning
   - requests
   - seaborn
-  - scikit-learn
+  - scikit-learn=1.5.0
   - scipy
   - setuptools
   - fiona=1.9.0
   - pip:
       - pillow==10.3.0
-      - scikit-learn==1.5.0
       - scikit-image==0.24.0
       - tifffile==2024.6.18
       - matplotlib
@@ -46,5 +48,11 @@ dependencies:
       - streetview
       - mit-semseg==1.0.0
       - typer==0.17.4
+      - rich>=13.0.0
       - requests==2.32.5
       - types-requests
+      - huggingface_hub>=0.23.0
+      - transformers>=5.5.0
+      - accelerate>=0.33.0
+      - safetensors>=0.4.0
+      - python-dotenv>=1.0.0

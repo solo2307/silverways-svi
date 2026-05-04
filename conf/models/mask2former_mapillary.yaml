@@ -1,0 +1,12 @@
+input_dir: data/pano
+output_dir: outputs/mask2former_mapillary
+recursive: true
+limit: null
+device: auto
+
+model:
+  name_or_path: facebook/mask2former-swin-large-mapillary-vistas-semantic
+
+outputs:
+  save_color_mask: true
+  save_raw_mask: false

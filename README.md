@@ -1,118 +1,231 @@
-# 🚶‍♀️ SilverWays SVI Indicators
+# SilverWays SVI model inference
 
-**data-ingestion** is a semi-automatic pipeline that extracts, transforms, and loads (ETL) geospatial data to analyze **walkability for elderly people** in urban environments.
+This package runs separate ML models on Street View Imagery (SVI) images and saves predictions into separate output folders.
 
+## Models
 
----
-## 📂 Project Structure
-- **conf/** → Hydra configuration files
-  - `config.yaml` = main config
-  - `datasets/` = dataset configs (OSM, streetview, etc.)
-  - `indicators/` = YAML configs for elderly-friendly indicators
+| Model | Task | Runner | Config | Output |
+|---|---|---|---|---|
+| PSPNet | semantic segmentation / greenery indicators | `silverways_inference.run_pspnet` | `conf/models/pspnet.yaml` | CSV + masks |
+| YOLO | detection or segmentation depending on your `.pt` | `silverways_inference.run_yolo` | `conf/models/yolo.yaml` | CSV + JSON + annotated images |
+| Mask2Former Cityscapes | semantic segmentation | `silverways_inference.run_mask2former` | `conf/models/mask2former_cityscapes.yaml` | CSV + masks |
+| SAM3 | text-prompt segmentation | `silverways_inference.run_sam3` | `conf/models/sam3.yaml` | JSON + masks |
+| Grounded-SAM | Grounding DINO boxes + SAM masks | `silverways_inference.run_grounded_sam` | `conf/models/grounded_sam.yaml` | JSON + masks |
 
-- **silverways_inference/** → Core Python modules
-  - `indicators/` = indicator implementations (gvi, benches, etc.)
-  - `model/` = deep learning models for Street View Imagery
+## Create environment
 
-- **cache/** → Local cache for intermediate outputs
-- **data/** → Raw data storage
-- **environment.yaml** → Python dependencies
-- **.env** → Environment variables (e.g., API keys)
----
-## ⚙️ Getting Started
+CPU:
 
-### 1. Clone the Repository
-`git clone https://github.com/solo2307/silverways-svi.git`
-### 2. Setting up Python Environment
-- Option A – Using mamba/conda (recommended for geospatial libs)
+```bash
+mamba env create -f environment-cpu.yaml
+conda activate silver-ways-cpu
+```
 
-Preinstall mamba and run the following code
+GPU:
 
-`mamba env create -f environment.yaml`
+```bash
+mamba env create -f environment-gpu.yaml
+conda activate silver-ways-gpu
+```
 
-`conda activate silver-ways`
+Check GPU:
 
-- Option B – Using pip
+```bash
+python - <<'PY'
+import torch
+print("CUDA available:", torch.cuda.is_available())
+print("CUDA devices:", torch.cuda.device_count())
+PY
+```
 
-If you don’t want to use **mamba/conda**, you can install the package directly:
+## Hugging Face login
 
-`pip install -e .`
+SAM3 is gated. Use the same account that has access to `facebook/sam3`.
 
-This will install all dependencies from pyproject.toml and expose the CLI tool **_silverways_**.
+```bash
+hf auth login
+```
 
-## 🚀 Usage
-### 🐍 Manual Job Run (mamba/conda) - example of Google Street View Imagery
+Or:
 
-Step 1: Prepare Road Network File (If  available, skip this step)
+```bash
+export HF_TOKEN=hf_your_token_here
+```
 
-Run `ohsome_job.py` to retreat road network from OSM.
+## Input images
 
-Step 2: Download Google Street View Imagery
-- call `streetview_job.py`
+Put SVI images here:
 
-Step 3: Backup the downloaded imagery to MINIO bucket (optional)
-- call `minio_backup_job.py`
+```text
+data/pano/
+```
 
-### 🖥️ Command Line Interface (CLI)
+This folder should not be committed.
 
-The silverways CLI wraps all major pipeline steps (OSM fetch, Street View imagery, indicator computation) into simple commands.
-It automatically loads environment variables from your .env file (must be placed in the repository root).
+## PSPNet
 
-Check available commands in terminal:
+Download PSPNet weights:
 
-`silverways --help`
+```bash
+python -m silverways_inference.download_models pspnet \
+  --config conf/models/pspnet.yaml
+```
 
-#### 🔑 API Key Check
+Run:
 
-Verify that your .env file contains a Google API key:
+```bash
+python -m silverways_inference.run_pspnet infer \
+  --config conf/models/pspnet.yaml
+```
 
-`silverways apikey-check`
+Output:
 
- - ✅ Prints confirmation if the key is set
- - ❌ Warns you if it’s missing
+```text
+outputs/pspnet/
+├── predictions.csv
+└── masks/
+```
 
-#### 🗺️ OSM Data
+## YOLO
 
-Fetch the road network from OpenStreetMap:
-`silverways osm fetch-osm --config conf/config.yaml`
+Put your YOLO weights here:
 
-#### 📸 Street View Imagery
+```text
+models/yolo/best.pt
+```
 
-1. Download panoramas:
+Run:
 
-`silverways streetview download --config conf/config.yaml`
+```bash
+python -m silverways_inference.run_yolo infer \
+  --config conf/models/yolo.yaml
+```
 
+Output:
 
-2. Run deep learning inference (e.g., greenery, sky index):
+```text
+outputs/yolo/
+├── predictions.csv
+├── json/
+└── annotated/
+```
 
-`silverways streetview infer --config conf/config.yaml`
+## Mask2Former Cityscapes
 
-#### 🌳 Walkability Indicators
+Run:
 
-Compute indicators:
+```bash
+python -m silverways_inference.run_mask2former infer \
+  --config conf/models/mask2former_mapillary.yaml
+```
 
-`silverways indicators run --config conf/indicators/ind_config.yaml`
+Output:
 
+```text
+outputs/mask2former_cityscapes/
+├── predictions.csv
+└── masks/
+```
 
-Merge all outputs into one enriched roads file:
+## SAM3
 
-`silverways indicators merge \
-  --config conf/indicators/ind_config.yaml \
-  --out cache/roads_enriched.gpkg`
+Make sure you have Hugging Face access to `facebook/sam3`.
 
-### 📂 Configuration
+Edit the prompt in:
 
-All pipeline settings (datasets, storage paths, API keys) are managed in Hydra YAML configs under `conf/config.yml`:
- - assign a `gcp.service_key` that you generated in GCP
- - define the `storage.sds`/`storage.cache` location to store your data
+```text
+conf/models/sam3.yaml
+```
 
-Edit the Street View YAML in `conf/datasets/streetview_config.yaml`:
-- define the `input_file` to define your road network file
-- define  the output paths `output_points` and `output_panorama_metadata`
-- assign point settings such as `point_step` and `merge_distance`
-- assign a `request_delay` for retreat panorama images, there is no limit for the request of the Google street view panorama matadata
-- define `manifest` to store the downloaded panorama images
-- define `dir` to store the downloaded panorama images, note: this folder will be created inside the `storage.sds`/`storage.cache` location
-- define `max_requests` to limit the number of downloaded panorama images, if it is **None** or **null** all the panorama images will be downloaded
+Example:
 
-Environment secrets (Google API key, MinIO credentials, etc.) should be placed in .env at the project root.
+```yaml
+prompt:
+  text: vegetation
+```
+
+Run:
+
+```bash
+python -m silverways_inference.run_sam3 infer \
+  --config conf/models/sam3.yaml
+```
+
+Output:
+
+```text
+outputs/sam3/
+├── json/
+└── masks/
+```
+
+## Grounded-SAM
+
+Edit labels in:
+
+```text
+conf/models/grounded_sam.yaml
+```
+
+Run:
+
+```bash
+python -m silverways_inference.run_grounded_sam infer \
+  --config conf/models/grounded_sam.yaml
+```
+
+Output:
+
+```text
+outputs/grounded_sam/
+├── json/
+└── masks/
+```
+
+## Quick smoke test
+
+Set this in any config file:
+
+```yaml
+limit: 5
+```
+
+Then run the model. This checks the pipeline before processing all images.
+
+## Git ignore
+
+Append `.gitignore.additions` to `.gitignore`:
+
+```bash
+cat .gitignore.additions >> .gitignore
+rm .gitignore.additions
+```
+
+Do not commit:
+
+```text
+data/
+models/
+outputs/
+.env
+*.pt
+*.pth
+*.ckpt
+```
+
+## Commit
+
+```bash
+git add \
+  environment-cpu.yaml \
+  environment-gpu.yaml \
+  requirements-sam3-note.txt \
+  conf/models \
+  silverways_inference \
+  scripts \
+  README.models.md \
+  .gitignore
+
+git commit -m "Add separate SVI model inference runners"
+git push
+```

@@ -1,0 +1,24 @@
+input_dir: data/pano
+output_dir: outputs/yolo
+recursive: true
+limit: null
+device: auto
+
+model:
+  # Put your trained YOLO file here.
+  weights: models/yolo/best.pt
+
+  # Optional if you later upload YOLO weights to Hugging Face.
+  hf_repo_id: null
+  hf_patterns:
+    - "*.pt"
+
+predict:
+  conf: 0.25
+  iou: 0.70
+  imgsz: 1280
+
+outputs:
+  save_annotated: true
+  save_json: true
+  save_txt: false

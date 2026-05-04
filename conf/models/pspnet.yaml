@@ -1,0 +1,22 @@
+input_dir: data/pano
+output_dir: outputs/pspnet
+recursive: true
+limit: null
+device: auto
+
+model:
+  hf_repo_id: solo2307/pspnet_svi_veg
+  local_dir: models/pspnet_svi_veg
+  files:
+    - encoder_epoch_50.pth
+    - decoder_epoch_50.pth
+    - color150.mat
+    - color150-labels.txt
+  arch_encoder: resnet50dilated
+  arch_decoder: ppm_deepsup
+  fc_dim: 2048
+  num_class: 150
+
+outputs:
+  save_color_mask: true
+  save_raw_mask: false
