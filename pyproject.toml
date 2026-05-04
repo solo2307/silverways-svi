@@ -1,5 +1,5 @@
 [project]
-name = "silverways"
+name = "silverways-dl"
 version = "0.1.0"
 description = "Repository for elderly-friendly walkability indicators"
 authors = [
