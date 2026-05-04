@@ -98,6 +98,10 @@ def copy_ultralytics_weight_to_target(
     if ckpt_path.resolve() != target_path.resolve():
         shutil.copy2(ckpt_path, target_path)
 
+        # Clean root-level duplicate created by Ultralytics, e.g. yolo11l.pt or sam2_b.pt
+        if ckpt_path.parent.resolve() == Path.cwd().resolve():
+            ckpt_path.unlink(missing_ok=True)
+
     return target_path
 
 
