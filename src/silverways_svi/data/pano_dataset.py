@@ -1,3 +1,42 @@
+"""
+Panorama cropping utilities for Street View imagery.
+
+This module provides a lightweight dataset class for panoramic images.
+It converts each panorama into several horizontal heading views, for example:
+
+    panorama image
+        -> 0 degree crop
+        -> 90 degree crop
+        -> 180 degree crop
+        -> 270 degree crop
+
+The current implementation uses simple horizontal cropping. It does not perform
+true perspective projection. This is useful for testing model pipelines on
+panoramic Street View images because many computer vision models, such as YOLO,
+Grounding DINO, SAM2, and PSPNet, usually work better on regular image views
+than on a full 360-degree panorama.
+
+Typical use:
+
+    dataset = PanoramaDataset(
+        input_dir="data/pano",
+        headings=(0, 90, 180, 270),
+        fov_degrees=90,
+    )
+
+    dataset.save_all_views("data/crop")
+
+Expected output:
+
+    data/crop/
+        WE0VZ5B3_0.png
+        WE0VZ5B3_90.png
+        WE0VZ5B3_180.png
+        WE0VZ5B3_270.png
+
+Later, this simple crop logic can be replaced with true perspective projection
+if panorama distortion becomes a problem.
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -17,6 +56,18 @@ class PanoramaView:
     image: Image.Image
     view_id: str
     crop_box: tuple[int, int, int, int]
+
+    @property
+    def pano_stem(self) -> str:
+        return self.pano_path.stem
+
+    def save(self, output_dir: str | Path, suffix: str = ".png") -> Path:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        output_path = output_dir / f"{self.pano_stem}_{self.heading}.png"
+        self.image.save(output_path)
+        return output_path
 
 
 @dataclass(frozen=True)
@@ -93,6 +144,16 @@ class PanoramaDataset:
     def __iter__(self) -> Iterator[PanoramaItem]:
         for i in range(len(self)):
             yield self[i]
+
+    def save_all_views(self, output_dir: str | Path) -> list[Path]:
+        output_dir = Path(output_dir)
+        saved_paths: list[Path] = []
+
+        for pano in self:
+            for view in pano.views:
+                saved_paths.append(view.save(output_dir))
+
+        return saved_paths
 
     def _crop_heading(
         self,
