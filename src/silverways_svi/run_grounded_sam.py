@@ -14,7 +14,7 @@ from transformers import (
     SamProcessor,
 )
 
-from src.common import (
+from silverways_svi.common import (
     hf_token,
     list_images,
     read_yaml,

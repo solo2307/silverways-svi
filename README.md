@@ -83,14 +83,14 @@ This folder should not be committed.
 Download PSPNet weights:
 
 ```bash
-python -m src.download_models pspnet \
+python -m silverways_svi.download_models pspnet \
   --config conf/models/pspnet.yaml
 ```
 
 Run:
 
 ```bash
-python -m src.run_pspnet infer \
+python -m silverways_svi.run_pspnet infer \
   --config conf/models/pspnet.yaml
 ```
 
@@ -113,7 +113,7 @@ models/yolo/best.pt
 Run:
 
 ```bash
-python -m src.run_yolo infer \
+python -m silverways_svi.run_yolo infer \
   --config conf/models/yolo.yaml
 ```
 
@@ -131,7 +131,7 @@ outputs/yolo/
 Run:
 
 ```bash
-python -m src.run_mask2former infer \
+python -m silverways_svi.run_mask2former infer \
   --config conf/models/mask2former_mapillary.yaml
 ```
 
@@ -163,7 +163,7 @@ prompt:
 Run:
 
 ```bash
-python -m src.run_sam3 infer \
+python -m silverways_svi.run_sam3 infer \
   --config conf/models/sam3.yaml
 ```
 
@@ -186,7 +186,7 @@ conf/models/grounded_sam.yaml
 Run:
 
 ```bash
-python -m src.run_grounded_sam infer \
+python -m silverways_svi.run_grounded_sam infer \
   --config conf/models/grounded_sam.yaml
 ```
 
@@ -237,7 +237,7 @@ git add \
   environment-gpu.yaml \
   requirements-sam3-note.txt \
   conf/models \
-  src \
+  silverways_svi \
   scripts \
   README.models.md \
   .gitignore

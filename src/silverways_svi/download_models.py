@@ -5,7 +5,7 @@ from pathlib import Path
 import typer
 from huggingface_hub import snapshot_download
 
-from src.common import hf_token, read_yaml
+from silverways_svi.common import hf_token, read_yaml
 
 app = typer.Typer(help="Download model files used by the separate runners.")
 
