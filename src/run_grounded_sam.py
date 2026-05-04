@@ -14,7 +14,7 @@ from transformers import (
     SamProcessor,
 )
 
-from silverways_inference.common import (
+from src.common import (
     hf_token,
     list_images,
     read_yaml,

@@ -11,7 +11,7 @@ from rich.console import Console
 from torchvision import transforms
 from tqdm import tqdm
 
-from silverways_inference.common import (
+from src.common import (
     append_csv,
     class_fraction,
     hf_token,

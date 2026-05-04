@@ -8,7 +8,7 @@ from rich.console import Console
 from tqdm import tqdm
 from ultralytics import YOLO
 
-from silverways_inference.common import (
+from src.common import (
     append_csv,
     hf_token,
     list_images,

@@ -1,18 +1,29 @@
+# IDE
+.idea/
+
+# Downloaded models and predictions
 models/
 outputs/
 cache/
 
+# Local data
+data/*
+!data/pano/
+!data/pano/.gitkeep
+
+# Secrets
 .env
 .env.*
 !.env_template
 
+# Model weights
 *.pt
 *.pth
 *.ckpt
 *.onnx
 *.engine
 
+# Python
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
-.idea/

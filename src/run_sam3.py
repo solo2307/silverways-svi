@@ -9,7 +9,7 @@ from rich.console import Console
 from tqdm import tqdm
 from transformers import AutoModel, AutoProcessor
 
-from silverways_inference.common import (
+from src.common import (
     hf_token,
     list_images,
     read_yaml,

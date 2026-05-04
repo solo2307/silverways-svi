@@ -10,7 +10,7 @@ import numpy as np
 from huggingface_hub import hf_hub_download
 from ultralytics import YOLO
 
-from silverways_inference.tiling import Tile
+from src.tiling import Tile
 
 
 @dataclass(frozen=True)

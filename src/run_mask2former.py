@@ -10,7 +10,7 @@ from rich.console import Console
 from tqdm import tqdm
 from transformers import AutoImageProcessor, Mask2FormerForUniversalSegmentation
 
-from silverways_inference.common import (
+from src.common import (
     append_csv,
     class_fraction,
     hf_token,
