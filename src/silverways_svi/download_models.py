@@ -124,7 +124,7 @@ def download_pspnet_from_config(config_path: Path) -> Path:
 def download_mask2former_from_config(config_path: Path) -> Path:
     """Download Mask2Former weights from Hugging Face."""
     cfg = read_yaml(config_path)
-    model_cfg = cfg["models"]
+    model_cfg = cfg["model"]
 
     repo_id = model_cfg["name_or_path"]
     local_dir = model_cfg.get("local_dir", "models/mask2former_mapillary")
@@ -146,7 +146,7 @@ def check_yolo_from_config(config_path: Path) -> Path | str:
       weights: models/custom_best.pt
     """
     cfg = read_yaml(config_path)
-    model_cfg = cfg["models"]
+    model_cfg = cfg["model"]
 
     weights = str(model_cfg["weights"])
     weights_path = Path(weights)
@@ -185,7 +185,7 @@ def check_sam2_from_config(config_path: Path) -> Path | str:
       weights: models/sam2_l.pt
     """
     cfg = read_yaml(config_path)
-    model_cfg = cfg["models"]
+    model_cfg = cfg["model"]
 
     weights = str(model_cfg["weights"])
     weights_path = Path(weights)
