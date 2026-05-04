@@ -15,7 +15,9 @@ from silverways_svi.data.image_dataset import ImageDataset
 from silverways_svi.models.pspnet import PSPNetSegmenter, make_options
 
 app = typer.Typer(help="Run PSPNet semantic segmentation on image folders.")
-
+@app.callback()
+def main() -> None:
+    """PSPNet runner."""
 
 CLASS_IDS = {
     "building": 1,
