@@ -36,15 +36,15 @@ def download_hf_snapshot(
     repo_id: str,
     local_dir: str | Path,
     allow_patterns: list[str] | None = None,
-    repo_type: str = "models",
+    repo_type: str = "model",
 ) -> Path:
-    """Download files from a Hugging Face models repo."""
+    """Download files from a Hugging Face model repo."""
     local_dir = Path(local_dir)
     local_dir.mkdir(parents=True, exist_ok=True)
 
     snapshot_download(
         repo_id=repo_id,
-        repo_type=repo_type,
+        repo_type=repo_type,  # must be "model", not "models"
         local_dir=local_dir,
         allow_patterns=allow_patterns,
         token=hf_token(),
@@ -213,32 +213,6 @@ def check_sam2_from_config(config_path: Path) -> Path | str:
         "`models/sam2_b.pt`, or put weights at the configured path."
     )
 
-
-def check_sam3_from_config(config_path: Path) -> Path:
-    """Check that manually downloaded SAM3 weights exist.
-
-    SAM3 is gated and must be downloaded manually.
-    """
-    cfg = read_yaml(config_path)
-    model_cfg = cfg["models"]
-
-    weights = Path(model_cfg["weights"])
-
-    if weights.exists():
-        return weights
-
-    weights.parent.mkdir(parents=True, exist_ok=True)
-
-    raise FileNotFoundError(
-        "\nSAM3 weights are missing.\n\n"
-        f"Expected file:\n  {weights}\n\n"
-        "SAM3 is gated. Request access here:\n"
-        "  https://huggingface.co/facebook/sam3\n\n"
-        "After access is approved, download `sam3.pt` manually and place it at:\n"
-        f"  {weights}\n"
-    )
-
-
 @app.command()
 def pspnet(
     config: Path = typer.Option(
@@ -293,28 +267,31 @@ def sam2(
     """Check/download SAM2 weights using Ultralytics."""
     result = check_sam2_from_config(config)
     typer.echo(f"SAM2 models ready: {result}")
+def download_grounding_dino_from_config(config_path: Path) -> Path:
+    """Download Grounding DINO model files from Hugging Face."""
+    cfg = read_yaml(config_path)
+    model_cfg = cfg["model"]
 
+    repo_id = model_cfg["name_or_path"]
+    local_dir = model_cfg.get("local_dir", "models/grounding_dino_tiny")
 
+    return download_hf_snapshot(
+        repo_id=repo_id,
+        local_dir=local_dir,
+        repo_type="model",
+    )
 @app.command()
-def sam3(
+def grounding_dino(
     config: Path = typer.Option(
-        Path("conf/models/sam3.yaml"),
+        Path("conf/models/grounding_dino.yaml"),
         "--config",
         "-c",
-        help="Path to SAM3 config YAML.",
+        help="Path to Grounding DINO config YAML.",
     )
 ) -> None:
-    """Check SAM3 weights.
-
-    SAM3 must be downloaded manually after Hugging Face gated access is approved.
-    """
-    try:
-        weights = check_sam3_from_config(config)
-        typer.echo(f"SAM3 weights found: {weights}")
-    except FileNotFoundError as exc:
-        typer.echo(str(exc))
-        raise typer.Exit(code=1) from exc
-
+    """Download Grounding DINO model files from Hugging Face."""
+    output_dir = download_grounding_dino_from_config(config)
+    typer.echo(f"Downloaded Grounding DINO files to: {output_dir}")
 
 @app.command("all")
 def download_all() -> None:
@@ -333,12 +310,10 @@ def download_all() -> None:
     )
     typer.echo(f"Downloaded Mask2Former files to: {mask2former_dir}")
 
-    typer.echo(
-        "\nSAM3 was not downloaded automatically.\n"
-        "After placing `sam3.pt` in `models/`, run:\n"
-        "  python -m silverways_svi.download_models sam3"
+    grounding_dino_dir = download_grounding_dino_from_config(
+        Path("conf/models/grounding_dino.yaml")
     )
-
+    typer.echo(f"Downloaded Grounding DINO files to: {grounding_dino_dir}")
 
 if __name__ == "__main__":
     app()
