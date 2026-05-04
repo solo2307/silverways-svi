@@ -73,7 +73,7 @@ def download(
         ...,
         help=(
             "Model to download/check: pspnet, yolo, mask2former, "
-            "grounding-dino, sam2, sam3, or all."
+            "grounding-dino, sam2, or all."
         ),
     ),
 ) -> None:
