@@ -108,7 +108,7 @@ def copy_ultralytics_weight_to_target(
 def download_pspnet_from_config(config_path: Path) -> Path:
     """Download PSPNet weights from Hugging Face."""
     cfg = read_yaml(config_path)
-    model_cfg = cfg["models"]
+    model_cfg = cfg["model"]
 
     repo_id = model_cfg["hf_repo_id"]
     local_dir = model_cfg["local_dir"]
