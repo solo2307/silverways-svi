@@ -11,12 +11,16 @@ dependencies:
 
   # GPU PyTorch stack.
   # Keep torch + torchvision + CUDA from conda together.
-  - pytorch=2.1.2
-  - torchvision=0.16.2
+  # This version is new enough for recent transformers and still works with YOLO.
+  - pytorch=2.4.1
+  - torchvision=0.19.1
+  - torchaudio=2.4.1
   - pytorch-cuda=12.1
 
+  # Keep NumPy below 2 for compatibility with PyTorch / older packages.
+  - numpy=1.26.4
+
   # Core Python/data
-  - numpy
   - scipy
   - pip
   - pyyaml
@@ -35,7 +39,7 @@ dependencies:
 
       # Model downloads / Hugging Face models
       - huggingface_hub>=0.23.0
-      - transformers>=4.45.0
+      - transformers>=4.45.0,<5
       - accelerate>=0.33.0
       - safetensors>=0.4.0
 

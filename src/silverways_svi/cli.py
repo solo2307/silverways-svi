@@ -1,3 +1,44 @@
+"""
+Command-line interface for SilverWays SVI.
+
+This module exposes the main user-facing commands for running the SilverWays
+Street View Imagery inference workflows from the terminal.
+
+The CLI is intentionally thin: it does not contain model logic itself. Instead,
+it delegates to package modules under `silverways_svi.runners`.
+
+Main workflows:
+
+    silverways check
+        Check that the environment is installed correctly.
+
+    silverways download <model>
+        Download or check required model weights.
+
+    silverways generate-pano-crops
+        Generate directional crops from full panorama images.
+
+    silverways viz-pspnet --image data/crop/example.png
+        Run PSPNet on one image and save a debug visualization.
+
+    silverways run-pspnet
+        Run PSPNet semantic segmentation on a folder of images.
+
+    silverways run-yolo
+        Run YOLO object detection.
+
+    silverways run-mask2former
+        Run Mask2Former semantic segmentation using the Mapillary Vistas model.
+
+    silverways run-grounded-sam
+        Run Grounding DINO text-prompt detection followed by SAM2 segmentation.
+
+The console entry point is configured in `pyproject.toml`:
+
+    [project.scripts]
+    silverways = "silverways_svi.cli:app"
+"""
+
 from __future__ import annotations
 
 import subprocess
@@ -10,7 +51,7 @@ app = typer.Typer(help="SilverWays SVI command line tools.")
 
 
 def run_module(module: str, args: list[str] | None = None) -> None:
-    """Run a Python module with the current Python interpreter."""
+    """Run a Python package module with the current Python interpreter."""
     args = args or []
     command = [sys.executable, "-m", module, *args]
 
@@ -30,33 +71,113 @@ def check() -> None:
 def download(
     model: str = typer.Argument(
         ...,
-        help="Model to download/check: pspnet, yolo, sam2, grounding_dino, mask2former, or all.",
+        help=(
+            "Model to download/check: pspnet, yolo, mask2former, "
+            "grounding-dino, sam2, sam3, or all."
+        ),
     ),
 ) -> None:
     """Download/check model weights."""
     run_module("silverways_svi.download_models", [model])
 
 
+@app.command("generate-pano-crops")
+def generate_pano_crops(
+    input_dir: Path = typer.Option(
+        Path("data/pano"),
+        "--input-dir",
+        "-i",
+        help="Directory containing panorama images.",
+    ),
+    output_dir: Path = typer.Option(
+        Path("data/crop"),
+        "--output-dir",
+        "-o",
+        help="Directory where cropped views will be saved.",
+    ),
+    headings: str = typer.Option(
+        "0,90,180,270",
+        "--headings",
+        help="Comma-separated headings, for example: 0,90,180,270.",
+    ),
+    fov_degrees: int = typer.Option(
+        90,
+        "--fov-degrees",
+        help="Horizontal field of view for each crop.",
+    ),
+    trim_top_ratio: float = typer.Option(
+        0.08,
+        "--trim-top-ratio",
+        help="Fraction to remove from the top of each crop.",
+    ),
+    trim_bottom_ratio: float = typer.Option(
+        0.15,
+        "--trim-bottom-ratio",
+        help="Fraction to remove from the bottom of each crop.",
+    ),
+    recursive: bool = typer.Option(
+        False,
+        "--recursive/--no-recursive",
+        help="Search panorama input directory recursively.",
+    ),
+) -> None:
+    """Generate heading crops from panorama images."""
+    args = [
+        "--input-dir",
+        str(input_dir),
+        "--output-dir",
+        str(output_dir),
+        "--headings",
+        headings,
+        "--fov-degrees",
+        str(fov_degrees),
+        "--trim-top-ratio",
+        str(trim_top_ratio),
+        "--trim-bottom-ratio",
+        str(trim_bottom_ratio),
+    ]
+
+    if recursive:
+        args.append("--recursive")
+
+    run_module("silverways_svi.runners.generate_pano_crops", args)
+
+
 @app.command("viz-pspnet")
 def viz_pspnet(
-    image: Path = typer.Option(..., "--image", "-i", help="Path to one input image."),
+    image: Path = typer.Option(
+        ...,
+        "--image",
+        "-i",
+        help="Path to one input image.",
+    ),
     output_dir: Path = typer.Option(
         Path("outputs/debug_pspnet"),
         "--output-dir",
         "-o",
         help="Output directory.",
     ),
-    device: str = typer.Option("auto", "--device", help="auto, cpu, cuda, or cuda:0."),
+    model_dir: Path = typer.Option(
+        Path("models/pspnet_svi_veg"),
+        "--model-dir",
+        help="Directory with PSPNet model files.",
+    ),
+    device: str = typer.Option(
+        "auto",
+        "--device",
+        help="auto, cpu, cuda, or cuda:0.",
+    ),
 ) -> None:
-    """Run PSPNet on one image and save visualization."""
+    """Run PSPNet on one image and save a debug visualization."""
     run_module(
-        "silverways_svi.runners.run_pspnet",
+        "silverways_svi.runners.viz_one_pspnet",
         [
-            "viz-one",
             "--image",
             str(image),
             "--output-dir",
             str(output_dir),
+            "--model-dir",
+            str(model_dir),
             "--device",
             device,
         ],
@@ -72,7 +193,7 @@ def run_pspnet(
         help="Path to PSPNet config YAML.",
     ),
 ) -> None:
-    """Run PSPNet folder inference."""
+    """Run PSPNet semantic segmentation on an image folder."""
     run_module(
         "silverways_svi.runners.run_pspnet",
         ["infer", "--config", str(config)],
@@ -88,7 +209,7 @@ def run_yolo(
         help="Path to YOLO config YAML.",
     ),
 ) -> None:
-    """Run YOLO inference."""
+    """Run YOLO object detection."""
     run_module(
         "silverways_svi.runners.run_yolo",
         ["infer", "--config", str(config)],
@@ -101,59 +222,28 @@ def run_mask2former(
         Path("conf/models/mask2former_mapillary.yaml"),
         "--config",
         "-c",
-        help="Path to Mask2Former config YAML.",
+        help="Path to Mask2Former Mapillary Vistas config YAML.",
     ),
 ) -> None:
-    """Run Mask2Former inference."""
+    """Run Mask2Former Mapillary Vistas semantic segmentation."""
     run_module(
         "silverways_svi.runners.run_mask2former",
         ["infer", "--config", str(config)],
     )
 
 
-@app.command("run-sam2")
-def run_sam2(
+@app.command("run-grounded-sam")
+def run_grounded_sam(
     config: Path = typer.Option(
-        Path("conf/models/sam2.yaml"),
+        Path("conf/models/grounded_sam.yaml"),
         "--config",
         "-c",
-        help="Path to SAM2 config YAML.",
+        help="Path to Grounded-SAM config YAML.",
     ),
 ) -> None:
-    """Run SAM2 inference."""
+    """Run Grounding DINO + SAM2 segmentation."""
     run_module(
-        "silverways_svi.runners.run_sam2",
-        ["infer", "--config", str(config)],
-    )
-
-@app.command("run-grounding-dino")
-def run_grounding_dino(
-    config: Path = typer.Option(
-        Path("conf/models/grounding_dino.yaml"),
-        "--config",
-        "-c",
-        help="Path to Grounding DINO config YAML.",
-    ),
-) -> None:
-    """Run Grounding DINO open-vocabulary detection."""
-    run_module(
-        "silverways_svi.runners.run_grounding_dino",
-        ["infer", "--config", str(config)],
-    )
-
-
-@app.command("run-grounded-sam2")
-def run_grounded_sam2(
-    config: Path = typer.Option(
-        Path("conf/models/grounded_sam2.yaml"),
-        "--config",
-        "-c",
-        help="Path to Grounded-SAM2 config YAML.",
-    ),
-) -> None:
-    """Run Grounding DINO + SAM2 pipeline."""
-    run_module(
-        "silverways_svi.runners.run_grounded_sam2",
+        "silverways_svi.runners.run_grounded_sam",
         ["infer", "--config", str(config)],
     )
 
