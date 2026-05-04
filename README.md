@@ -1,17 +1,7 @@
-# 🚶‍♀️ SilverWays Indicators – ETL Pipeline for Elderly Walkability
+# 🚶‍♀️ SilverWays SVI Indicators
 
 **data-ingestion** is a semi-automatic pipeline that extracts, transforms, and loads (ETL) geospatial data to analyze **walkability for elderly people** in urban environments.
 
----
-
-## 💡 Key Features
-
-- 🗺️ Region-based geospatial data extraction
-- 🛰️ Satellite and street-level imagery integration
-- 🌍 OSM-based infrastructure and amenity data
-- 🌳 Urban greenery and infrastructure indicators
-- 🧠 Deep learning-based semantic segmentation
-- 🏙️ Outputs data for accessibility and walkability analysis
 
 ---
 ## 📂 Project Structure
@@ -20,12 +10,9 @@
   - `datasets/` = dataset configs (OSM, streetview, etc.)
   - `indicators/` = YAML configs for elderly-friendly indicators
 
-- **research_code/** → Core Python modules
-  - `indicators/` = indicator implementations (slope, canopy, benches, etc.)
-  - `jobs/` = orchestration jobs (streetview_job, indicator_job, etc.)
-  - `ops/` = helper modules (downloads, APIs, storage)
-  - `misc/` = utility functions (geospatial, image processing)
-  - `dl/` = deep learning models for Street View Imagery
+- **silverways_inference/** → Core Python modules
+  - `indicators/` = indicator implementations (gvi, benches, etc.)
+  - `model/` = deep learning models for Street View Imagery
 
 - **cache/** → Local cache for intermediate outputs
 - **data/** → Raw data storage
@@ -35,7 +22,7 @@
 ## ⚙️ Getting Started
 
 ### 1. Clone the Repository
-`git clone https://gitlab.heigit.org/giscience/disaster-tools/silverways/data-ingestion.git`
+`git clone https://github.com/solo2307/silverways-svi.git`
 ### 2. Setting up Python Environment
 - Option A – Using mamba/conda (recommended for geospatial libs)
 

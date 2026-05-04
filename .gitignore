@@ -11,7 +11,6 @@
 research_code/__pycache__/
 research_code/dl/__pycache__/
 research_code/dataset/__pycache__/
-/ohsome_log/**
 /data/opengeodata_mannheim.gpkg
 /silverways.egg-info/**
 /.mypy_cache/**
