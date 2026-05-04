@@ -27,6 +27,8 @@ predict:
   conf: 0.25
   iou: 0.70
   imgsz: 1280
+  target_classes:
+    - bench
 
 panorama:
   enabled: true

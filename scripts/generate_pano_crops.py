@@ -54,6 +54,18 @@ def main() -> None:
         help="Horizontal crop width in degrees.",
     )
     parser.add_argument(
+        "--trim-top-ratio",
+        type=float,
+        default=0.08,
+        help="Fraction to remove from the top of each crop.",
+    )
+    parser.add_argument(
+        "--trim-bottom-ratio",
+        type=float,
+        default=0.15,
+        help="Fraction to remove from the bottom of each crop.",
+    )
+    parser.add_argument(
         "--recursive",
         action="store_true",
         help="Search input directory recursively.",
@@ -65,6 +77,8 @@ def main() -> None:
         input_dir=args.input_dir,
         headings=parse_headings(args.headings),
         fov_degrees=args.fov_degrees,
+        trim_top_ratio=args.trim_top_ratio,
+        trim_bottom_ratio=args.trim_bottom_ratio,
         recursive=args.recursive,
     )
 
@@ -74,9 +88,6 @@ def main() -> None:
     print(f"Panoramas found: {len(dataset)}")
     print(f"Crops saved: {len(saved_paths)}")
     print(f"Output directory: {output_dir}")
-
-    for path in saved_paths:
-        print(path)
 
 
 if __name__ == "__main__":

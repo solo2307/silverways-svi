@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import typer
-from huggingface_hub import snapshot_download
 from rich.console import Console
 from tqdm import tqdm
 from ultralytics import YOLO
 
 from silverways_svi.common import (
     append_csv,
-    hf_token,
     list_images,
     read_yaml,
     write_json,
@@ -21,44 +20,99 @@ app = typer.Typer(help="Run YOLO predictions on SVI images.")
 console = Console()
 
 
-@app.command()
-def infer(config: Path = Path("conf/models/yolo.yaml")) -> None:
-    cfg = read_yaml(config)
-    model_cfg = cfg["models"]
-    weights = Path(model_cfg["weights"])
+@app.callback()
+def main() -> None:
+    """YOLO runner."""
 
-    if model_cfg.get("hf_repo_id") and not weights.exists():
-        snapshot_download(
-            repo_id=model_cfg["hf_repo_id"],
-            repo_type="models",
-            local_dir=weights.parent,
-            allow_patterns=model_cfg.get("hf_patterns", ["*.pt"]),
-            token=hf_token(),
+
+def get_target_class_ids(
+    model_names: dict[int, str],
+    target_classes: list[str] | None,
+) -> list[int] | None:
+    """Convert class names like ['bench'] into YOLO class IDs."""
+    if not target_classes:
+        return None
+
+    normalized_targets = {name.strip().lower() for name in target_classes}
+
+    class_ids = [
+        class_id
+        for class_id, class_name in model_names.items()
+        if class_name.lower() in normalized_targets
+    ]
+
+    missing = normalized_targets - {
+        class_name.lower()
+        for class_id, class_name in model_names.items()
+        if class_id in class_ids
+    }
+
+    if missing:
+        available = ", ".join(model_names.values())
+        raise ValueError(
+            f"Target classes not found in YOLO model: {sorted(missing)}\n"
+            f"Available classes: {available}"
         )
 
-    if not weights.exists():
-        raise FileNotFoundError(f"YOLO weights not found: {weights}")
+    return class_ids
 
-    images = list_images(cfg["input_dir"], cfg.get("recursive", True), cfg.get("limit"))
+
+@app.command()
+def infer(
+    config: Path = typer.Option(
+        Path("conf/models/yolo.yaml"),
+        "--config",
+        "-c",
+        help="Path to YOLO config YAML.",
+    )
+) -> None:
+    cfg = read_yaml(config)
+
+    model_cfg = cfg["model"]
+    predict_cfg = cfg.get("predict", {})
+    output_cfg = cfg.get("outputs", {})
+
+    weights = model_cfg["weights"]
+
+    images = list_images(
+        cfg["input_dir"],
+        recursive=cfg.get("recursive", True),
+        limit=cfg.get("limit"),
+    )
+
     output_dir = Path(cfg["output_dir"])
     output_dir.mkdir(parents=True, exist_ok=True)
 
     model = YOLO(str(weights))
     device = yolo_device(cfg.get("device", "auto"))
 
+    target_classes = predict_cfg.get("target_classes")
+    target_class_ids = get_target_class_ids(model.names, target_classes)
+
+    if target_class_ids is not None:
+        console.print(
+            f"Detecting only: {target_classes} "
+            f"(class IDs: {target_class_ids})"
+        )
+
+    predictions_csv = output_dir / "predictions.csv"
+    if predictions_csv.exists():
+        predictions_csv.unlink()
+
     for image_path in tqdm(images, desc="YOLO"):
         results = model.predict(
             source=str(image_path),
-            conf=cfg["predict"].get("conf", 0.25),
-            iou=cfg["predict"].get("iou", 0.7),
-            imgsz=cfg["predict"].get("imgsz", 1280),
+            conf=predict_cfg.get("conf", 0.25),
+            iou=predict_cfg.get("iou", 0.70),
+            imgsz=predict_cfg.get("imgsz", 1280),
+            classes=target_class_ids,
             device=device,
             verbose=False,
         )
 
         result = results[0]
         names = result.names
-        detections = []
+        detections: list[dict[str, Any]] = []
 
         if result.boxes is not None:
             boxes = result.boxes.xyxy.cpu().numpy()
@@ -76,18 +130,28 @@ def infer(config: Path = Path("conf/models/yolo.yaml")) -> None:
                 )
 
         json_path = ""
-        if cfg["outputs"].get("save_json", True):
+        if output_cfg.get("save_json", True):
             json_path = str(output_dir / "json" / f"{image_path.stem}.json")
-            write_json(json_path, {"image_path": str(image_path), "detections": detections})
+            write_json(
+                json_path,
+                {
+                    "image_name": image_path.name,
+                    "image_path": str(image_path),
+                    "target_classes": target_classes,
+                    "detections": detections,
+                },
+            )
 
         annotated_path = ""
-        if cfg["outputs"].get("save_annotated", True):
-            annotated_path = str(output_dir / "annotated" / f"{image_path.stem}.jpg")
+        if output_cfg.get("save_annotated", True):
+            annotated_path = str(
+                output_dir / "annotated" / f"{image_path.stem}.jpg"
+            )
             Path(annotated_path).parent.mkdir(parents=True, exist_ok=True)
             result.save(filename=annotated_path)
 
         append_csv(
-            output_dir / "predictions.csv",
+            predictions_csv,
             {
                 "image_name": image_path.name,
                 "image_path": str(image_path),

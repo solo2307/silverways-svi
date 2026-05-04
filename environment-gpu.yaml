@@ -1,58 +1,49 @@
 name: silverways-gpu
+
 channels:
-  - conda-forge
   - pytorch
   - nvidia
+  - conda-forge
   - defaults
 
 dependencies:
   - python=3.11.4
-  - pytorch::pytorch=2.1.2
-  - pytorch::torchvision
+
+  # GPU PyTorch stack.
+  # Keep torch + torchvision + CUDA from conda together.
+  - pytorch=2.1.2
+  - torchvision=0.16.2
   - pytorch-cuda=12.1
+
+  # Core Python/data
   - numpy
-  - pip
-  - pytorch-lightning
-  - requests
-  - seaborn
-  - scikit-learn=1.5.0
   - scipy
+  - pip
+  - pyyaml
   - setuptools
-  - fiona=1.9.0
+
+  # Image processing
+  - pillow
+  - matplotlib
+  - opencv
+
   - pip:
-      - pillow==10.3.0
-      - scikit-image==0.24.0
-      - tifffile==2024.6.18
-      - matplotlib
-      - opencv-python==4.10.0.84
-      - PyWavelets==1.7.0
-      - albumentations==1.3.1
-      - coolname==2.2.0
-      - ruff==0.1.14
-      - geojson==3.1.0
-      - geopandas==0.14.2
-      - hydra-core==1.3.2
-      - neptune==1.8.6
-      - omegaconf==2.3.0
-      - onnx==1.15.0
-      - pre-commit==3.3.3
-      - pysrt==1.1.2
-      - pycocotools==2.0.7
-      - pylint==2.17.4
-      - pyjoules==0.5.1
-      - pytest==7.4.0
-      - supervision==0.18.0
-      - tqdm==4.66.1
-      - ultralytics>=8.3.237
-      - ultralyticsplus==0.1.0
-      - streetview
-      - mit-semseg==1.0.0
+      # Package/CLI
       - typer==0.17.4
       - rich>=13.0.0
-      - requests==2.32.5
-      - types-requests
+      - tqdm>=4.66.1
+
+      # Model downloads / Hugging Face models
       - huggingface_hub>=0.23.0
-      - transformers>=5.5.0
+      - transformers>=4.45.0
       - accelerate>=0.33.0
       - safetensors>=0.4.0
+
+      # YOLO / SAM / SAM2
+      - ultralytics>=8.3.237
+
+      # PSPNet / MIT semantic segmentation
+      - mit-semseg==1.0.0
+
+      # Optional env variables
       - python-dotenv>=1.0.0

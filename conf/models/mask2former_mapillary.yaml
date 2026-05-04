@@ -2,7 +2,7 @@ input_dir: data/pano
 output_dir: outputs/mask2former_mapillary
 recursive: true
 limit: null
-device: auto
+device: cpu
 
 model:
   name_or_path: facebook/mask2former-swin-large-mapillary-vistas-semantic
@@ -10,4 +10,5 @@ model:
 
 outputs:
   save_color_mask: true
-  save_raw_mask: false
+  save_raw_mask: true
+  save_json: true
