@@ -3,37 +3,13 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from types import SimpleNamespace
 
 import matplotlib.pyplot as plt
 import numpy as np
-import torch
 from PIL import Image
 
-try:
-    from mit_semseg.dataset import TestDataset
-    from mit_semseg.models import ModelBuilder, SegmentationModule
-except ImportError as exc:
-    raise ImportError(
-        "mit-semseg is missing. Install the Conda environment first."
-    ) from exc
+from silverways_svi.models.pspnet import PSPNetSegmenter
 
-
-MODEL_FILES = [
-    "encoder_epoch_50.pth",
-    "decoder_epoch_50.pth",
-    "color150.mat",
-    "color150-labels.txt",
-]
-
-DEFAULT_OPTIONS = SimpleNamespace(
-    fc_dim=2048,
-    num_class=150,
-    imgSizes=[300, 400, 500, 600],
-    imgMaxSize=1000,
-    padding_constant=8,
-    segm_downsampling_rate=8,
-)
 
 # ADE20K class ids used by this PSPNet/ADE20K setup.
 CLASS_IDS = {
@@ -54,121 +30,6 @@ VIZ_COLORS = {
     "sky": (135, 206, 235),
     "water": (0, 80, 255),
 }
-
-
-def check_model_files(model_dir: Path) -> None:
-    """Check that PSPNet model files already exist locally."""
-    missing = [name for name in MODEL_FILES if not (model_dir / name).exists()]
-
-    if missing:
-        raise FileNotFoundError(
-            f"Missing PSPNet model files in {model_dir}:\n"
-            + "\n".join(f"  - {name}" for name in missing)
-            + "\n\nRun this first:\n"
-            "  python -m silverways_svi.download_models pspnet"
-        )
-
-
-def resolve_device(device: str) -> torch.device:
-    if device != "auto":
-        return torch.device(device)
-
-    if torch.cuda.is_available():
-        return torch.device("cuda")
-
-    # CPU is safest for the older mit-semseg stack.
-    return torch.device("cpu")
-
-
-class PSPNetPredictor:
-    """PSPNet/ADE20K predictor using the same architecture as the old working code."""
-
-    def __init__(
-        self,
-        model_dir: Path,
-        device: str = "auto",
-        options: SimpleNamespace = DEFAULT_OPTIONS,
-        encoder_name: str = "resnet101",
-        decoder_name: str = "upernet",
-    ) -> None:
-        check_model_files(model_dir)
-
-        self.model_dir = model_dir
-        self.device = resolve_device(device)
-        self.options = options
-        self.encoder_name = encoder_name
-        self.decoder_name = decoder_name
-        self.fc_dim = options.fc_dim
-        self.num_class = options.num_class
-        self.img_sizes = options.imgSizes
-
-        encoder_path = self.model_dir / "encoder_epoch_50.pth"
-        decoder_path = self.model_dir / "decoder_epoch_50.pth"
-
-        net_encoder = ModelBuilder.build_encoder(
-            arch=self.encoder_name,
-            fc_dim=self.fc_dim,
-            weights=str(encoder_path),
-        )
-
-        net_decoder = ModelBuilder.build_decoder(
-            arch=self.decoder_name,
-            fc_dim=self.fc_dim,
-            num_class=self.num_class,
-            weights=str(decoder_path),
-            use_softmax=True,
-        )
-
-        criterion = torch.nn.NLLLoss(ignore_index=-1)
-        self.model = SegmentationModule(net_encoder, net_decoder, criterion)
-        self.model.eval()
-        self.model.to(self.device)
-
-        torch.set_grad_enabled(False)
-
-    @torch.inference_mode()
-    def predict(self, image_path: str | Path) -> np.ndarray:
-        image_path = Path(image_path)
-
-        if not image_path.exists():
-            raise FileNotFoundError(f"Image not found: {image_path}")
-
-        dataset_test = TestDataset(
-            [{"fpath_img": str(image_path)}],
-            self.options,
-            max_sample=-1,
-        )
-
-        batch_data = dataset_test[0]
-        seg_size = (
-            batch_data["img_ori"].shape[0],
-            batch_data["img_ori"].shape[1],
-        )
-
-        img_resized_list = batch_data["img_data"]
-
-        scores = torch.zeros(
-            1,
-            self.num_class,
-            seg_size[0],
-            seg_size[1],
-            device=self.device,
-        )
-
-        for img in img_resized_list:
-            feed_dict = batch_data.copy()
-            feed_dict["img_data"] = img.to(self.device)
-
-            # These are not needed by SegmentationModule forward pass.
-            feed_dict.pop("img_ori", None)
-            feed_dict.pop("info", None)
-
-            pred_tmp = self.model(feed_dict, segSize=seg_size)
-            scores += pred_tmp / len(self.img_sizes)
-
-        _, pred = torch.max(scores, dim=1)
-
-        return pred.squeeze(0).detach().cpu().numpy().astype(np.uint8)
 
 
 def class_fraction(mask: np.ndarray, class_ids: int | list[int]) -> float:
@@ -305,12 +166,10 @@ def main() -> None:
     if not image_path.exists():
         raise FileNotFoundError(f"Image not found: {image_path}")
 
-    check_model_files(model_dir)
-
     image = Image.open(image_path).convert("RGB")
 
-    predictor = PSPNetPredictor(
-        model_dir=model_dir,
+    predictor = PSPNetSegmenter(
+        model_path=model_dir,
         device=args.device,
         encoder_name=args.encoder,
         decoder_name=args.decoder,

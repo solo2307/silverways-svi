@@ -6,7 +6,7 @@
 
 from pathlib import Path
 import numpy as np
-from research_code.dl.green_model_svi import SegModelPSPNet
+from src.silverways_svi.models.pspnet import PSPNetSegmenter
 import logging
 from tqdm import tqdm
 
@@ -46,7 +46,7 @@ class GreenIndex_SVI:
         return image_path
 
     def process_images(self, output_file: Path):
-        model = SegModelPSPNet(model_path=Path("data/models"))
+        model = PSPNetSegmenter(model_path=Path("models/pspnet"))
         for image in tqdm(self.images, desc="Processing images"):
             # Process prediction
             prediction = model.predict(test_image_path=image)
