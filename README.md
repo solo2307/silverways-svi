@@ -1,4 +1,9 @@
+<p align="center">
+  <img src="data/pano/test2.jpg" alt="SilverWays SVI pipeline overview" width="1024">
+</p>
+
 # SilverWays SVI
+
 
 Run deep learning models on Street View Imagery (SVI) and save predictions, masks, metrics, and visualizations.
 
