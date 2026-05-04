@@ -43,7 +43,7 @@ dependencies:
       - pytest==7.4.0
       - supervision==0.18.0
       - tqdm==4.66.1
-      - ultralytics==8.0.239
+      - ultralytics>=8.3.237
       - ultralyticsplus==0.1.0
       - streetview
       - mit-semseg==1.0.0

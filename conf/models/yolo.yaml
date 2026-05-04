@@ -5,18 +5,34 @@ limit: null
 device: auto
 
 model:
-  # Put your trained YOLO file here.
-  weights: models/yolo/best.pt
-
-  # Optional if you later upload YOLO weights to Hugging Face.
-  hf_repo_id: null
-  hf_patterns:
-    - "*.pt"
+  # Ultralytics model name or local .pt path.
+  #
+  # Pretrained detection examples:
+  #   yolo11n.pt
+  #   yolo11s.pt
+  #   yolo11m.pt
+  #   yolo11l.pt
+  #   yolo11x.pt
+  #
+  # Pretrained segmentation examples:
+  #   yolo11n-seg.pt
+  #   yolo11s-seg.pt
+  #   yolo11m-seg.pt
+  #   yolo11l-seg.pt
+  #   yolo11x-seg.pt
+  #
+  weights: models/yolo11l.pt
 
 predict:
   conf: 0.25
   iou: 0.70
   imgsz: 1280
+
+panorama:
+  enabled: true
+  headings: [0, 90, 180, 270]
+  fov_degrees: 90
+  save_crops: true
 
 outputs:
   save_annotated: true

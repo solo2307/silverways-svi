@@ -1,8 +1,6 @@
 """
 This script to generate semantic segmentation predictions for a dataset of images
 """
-
-
 import logging
 from pathlib import Path
 import cv2
@@ -228,26 +226,3 @@ class SVIdataset:
         logger.info("✅ Batch processing complete.")
 
 
-if __name__ == "__main__":
-    # Example of Usage
-
-    # from research_code.dl.mask2former import SegModelPSPNet
-    model_path = Path("data/models")
-    input_dir = "cache/streetview"
-    pred_dir = "cache/prediction"
-
-    # Example of overlay
-    # Visualize with indices overlayed in titles
-    from research_code.dl.utils import (
-        show_single_row_triptych,
-    )
-
-
-    show_single_row_triptych(
-        base_path="cache/google-streetview",
-        prediction_path="cache/google-prediction",
-        uuid="M_IEQajKEKXXeIk7iw69Ag",
-        angle=180,
-        alpha=0.4,
-        save_path=None,
-    )

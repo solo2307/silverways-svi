@@ -6,6 +6,7 @@ device: auto
 
 model:
   name_or_path: facebook/mask2former-swin-large-mapillary-vistas-semantic
+  local_dir: models/mask2former_mapillary
 
 outputs:
   save_color_mask: true

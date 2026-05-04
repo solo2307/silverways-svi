@@ -5,13 +5,18 @@ limit: null
 device: auto
 
 model:
-  name_or_path: facebook/sam3
+  weights: models/sam3.pt
 
 prompt:
-  text: vegetation
-  detection_threshold: 0.30
-  mask_threshold: 0.50
+  text:
+    - tree
+    - grass
+    - bush
+  conf: 0.25
+  imgsz: 1024
+  half: false
 
 outputs:
   save_masks: true
   save_json: true
+  save_annotated: true

@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: silverways-svi
+Version: 0.1.0
+Summary: Run deep learning models on Street View Imagery and save predictions.
+Requires-Python: <3.12,>=3.11

@@ -1,0 +1,2 @@
+[console_scripts]
+silverways = silverways_svi.cli:app

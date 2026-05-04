@@ -1,75 +1,16 @@
 [project]
-name = "silverways-dl"
+name = "silverways-svi"
 version = "0.1.0"
-description = "Repository for elderly-friendly walkability indicators"
-authors = [
-    { name = "Yulia Grinblat", email = "yulia.grinblat@heigit.org" }
-]
-readme = "README.md"
-license = { text = "MIT" }
-requires-python = ">=3.9"
-
-dependencies = [
-    "numpy",
-    "torch>=2.1.0",
-    "torchvision",
-    "pytorch-lightning",
-    "requests",
-    "seaborn",
-    "scikit-learn>=1.5.0",
-    "scipy",
-    "setuptools",
-    "shapely==2.0.1",
-    "geopandas==0.14.2",
-    "fiona==1.9.0",
-    "python-geohash==0.8.5",
-    "pillow==10.3.0",
-    "scikit-image==0.24.0",
-    "tifffile==2024.6.18",
-    "matplotlib",
-    "opencv-python==4.10.0.84",
-    "PyWavelets==1.7.0",
-    "albumentations==1.3.1",
-    "coolname==2.2.0",
-    "ruff==0.1.14",
-    "geojson==3.1.0",
-    "hydra-core==1.3.2",
-    "neptune==1.8.6",
-    "omegaconf==2.3.0",
-    "onnx==1.15.0",
-    "pre-commit==3.3.3",
-    "pysrt==1.1.2",
-    "pycocotools==2.0.7",
-    "pylint==2.17.4",
-    "pyjoules==0.5.1",
-    "pytest==7.4.0",
-    "rasterio==1.3.9",
-    "supervision==0.18.0",
-    "tqdm==4.66.1",
-    "ultralytics==8.0.239",
-    "ultralyticsplus==0.1.0",
-    "googlemaps",
-    "streetview",
-    "rasterstats==0.20.0",
-    "minio==7.2.15",
-    "mercantile==1.2.1",
-    "geemap==0.32.0",
-    "mit-semseg==1.0.0",
-    "typer==0.17.4",
-    "python-dotenv",
-    "types-requests",
-]
+description = "Run deep learning models on Street View Imagery and save predictions."
+requires-python = ">=3.11,<3.12"
 
 [project.scripts]
-silverways = "research_code.cli:app"
+silverways = "silverways_svi.cli:app"
 
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.black]
-line-length = 88
-
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["research_code*"]
+where = ["src"]
+include = ["silverways_svi*"]
