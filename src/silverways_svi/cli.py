@@ -116,7 +116,6 @@ def generate_pano_crops(
 
     run_module("silverways_svi.generate_pano_crops", args)
 
-
 @app.command("viz-pspnet")
 def viz_pspnet(
     image: Path = typer.Option(
@@ -221,6 +220,20 @@ def run_grounded_sam(
         ["infer", "--config", str(config)],
     )
 
+@app.command("run-groundedsam-internvl")
+def run_groundedsam_internvl(
+    config: Path = typer.Option(
+        Path("conf/models/groundedsam_internvl.yaml"),
+        "--config",
+        "-c",
+        help="Path to GroundedSAM + InternVL config YAML.",
+    ),
+) -> None:
+    """Run GroundedSAM localization followed by InternVL OSM surface/smoothness tagging."""
+    run_module(
+        "silverways_svi.runners.run_groundedsam_internvl",
+        ["infer", "--config", str(config)],
+    )
 
 if __name__ == "__main__":
     app()

@@ -1,0 +1,6 @@
+model:
+  name_or_path: unsloth/InternVL3-8B-GGUF
+  local_dir: models/internvl
+  files:
+    - "InternVL3-8B-Q4_K_M.gguf"
+    - "mmproj-F16.gguf"

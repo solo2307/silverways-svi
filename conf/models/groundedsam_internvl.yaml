@@ -1,0 +1,40 @@
+# conf/models/groundedsam_internvl.yaml
+
+input_dir: data/pano
+output_dir: outputs/groundedsam_internvl
+recursive: false
+limit: 1
+device: auto
+
+crop_padding_ratio: 0.15
+use_masked_crop: true
+
+grounding_dino:
+  name_or_path: IDEA-Research/grounding-dino-tiny
+  local_dir: models/grounding_dino_tiny
+
+sam2:
+  weights: models/sam2_b.pt
+  imgsz: 1024
+
+prompt:
+  text_labels:
+    - sidewalk
+    - sidewalk surface
+    - pedestrian walkway
+    - footway
+  box_threshold: 0.35
+  text_threshold: 0.25
+
+internvl:
+  model_path: models/internvl/InternVL3-8B-Q4_K_M.gguf
+  mmproj_path: models/internvl/mmproj-F16.gguf
+  n_ctx: 8192
+  n_gpu_layers: 0
+  verbose: false
+
+outputs:
+  save_json: true
+  save_masks: true
+  save_annotated: true
+  save_crops: true

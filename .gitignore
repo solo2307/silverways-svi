@@ -19,6 +19,7 @@ data/*
 # Model weights
 *.pt
 *.pth
+*.gguf
 *.ckpt
 *.onnx
 *.engine
@@ -31,3 +32,8 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+
+.DS_Store
+**/.DS_Store
+data/pano/test4.jpeg
+data/pano/test5.jpg

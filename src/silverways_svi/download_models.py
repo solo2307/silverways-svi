@@ -213,6 +213,22 @@ def check_sam2_from_config(config_path: Path) -> Path | str:
         "`models/sam2_b.pt`, or put weights at the configured path."
     )
 
+def download_internvl_from_config(config_path: Path) -> Path:
+    """Download InternVL GGUF model and mmproj files from Hugging Face."""
+    cfg = read_yaml(config_path)
+    model_cfg = cfg["model"]
+
+    repo_id = model_cfg["name_or_path"]
+    local_dir = model_cfg.get("local_dir", "models/internvl")
+    files = model_cfg.get("files")
+
+    return download_hf_snapshot(
+        repo_id=repo_id,
+        local_dir=local_dir,
+        allow_patterns=files,
+        repo_type="model",
+    )
+
 @app.command()
 def pspnet(
     config: Path = typer.Option(
@@ -293,6 +309,20 @@ def grounding_dino(
     output_dir = download_grounding_dino_from_config(config)
     typer.echo(f"Downloaded Grounding DINO files to: {output_dir}")
 
+@app.command()
+def internvl(
+    config: Path = typer.Option(
+        Path("conf/models/internvl.yaml"),
+        "--config",
+        "-c",
+        help="Path to InternVL config YAML.",
+    )
+) -> None:
+    """Download InternVL GGUF model and mmproj files from Hugging Face."""
+    output_dir = download_internvl_from_config(config)
+    typer.echo(f"Downloaded InternVL files to: {output_dir}")
+
+
 @app.command("all")
 def download_all() -> None:
     """Download/check non-gated models files."""
@@ -314,6 +344,11 @@ def download_all() -> None:
         Path("conf/models/grounding_dino.yaml")
     )
     typer.echo(f"Downloaded Grounding DINO files to: {grounding_dino_dir}")
+
+    internvl_dir = download_internvl_from_config(
+        Path("conf/models/internvl.yaml")
+    )
+    typer.echo(f"Downloaded InternVL files to: {internvl_dir}")
 
 if __name__ == "__main__":
     app()

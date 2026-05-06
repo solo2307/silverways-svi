@@ -8,7 +8,7 @@ channels:
 dependencies:
   - python=3.11.4
 
-  # PyTorch stack: keep torch + torchvision from conda together
+  # PyTorch stack
   - pytorch=2.4.1
   - torchvision=0.19.1
   - cpuonly
@@ -19,6 +19,8 @@ dependencies:
   - pip
   - pyyaml
   - setuptools
+  - cmake
+  - ninja
 
   # Image processing
   - pillow
@@ -33,7 +35,7 @@ dependencies:
 
       # Model downloads / HF models
       - huggingface_hub>=0.23.0
-      - transformers>=4.45.0
+      - transformers==4.45.2
       - accelerate>=0.33.0
       - safetensors>=0.4.0
 
@@ -42,6 +44,9 @@ dependencies:
 
       # PSPNet / MIT semantic segmentation
       - mit-semseg==1.0.0
+
+      # InternVL GGUF / llama.cpp
+      - llama-cpp-python>=0.3.0
 
       # Optional config/env
       - python-dotenv>=1.0.0
