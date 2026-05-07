@@ -2,7 +2,7 @@ input_dir: data/crop
 output_dir: outputs/pspnet
 recursive: true
 limit: null
-device: auto
+device: cuda
 
 model:
   hf_repo_id: solo2307/pspnet_svi_veg

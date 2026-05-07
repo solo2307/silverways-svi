@@ -2,7 +2,7 @@ input_dir: data/pano
 output_dir: outputs/grounded_sam
 recursive: false
 limit: null
-device: auto
+device: cuda
 
 grounding_dino:
   name_or_path: IDEA-Research/grounding-dino-tiny

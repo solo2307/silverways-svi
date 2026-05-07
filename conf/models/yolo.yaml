@@ -1,4 +1,4 @@
-input_dir: data/pano
+input_dir: data/crop
 output_dir: outputs/yolo
 recursive: true
 limit: null
