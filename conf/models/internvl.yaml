@@ -3,4 +3,4 @@ model:
   local_dir: models/internvl
   files:
     - "InternVL3-8B-Q4_K_M.gguf"
-    - "mmproj-F16.gguf"
+    - "mmproj-BF16.gguf"

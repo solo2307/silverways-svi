@@ -16,6 +16,13 @@ from ultralytics import SAM
 
 from silverways_svi.data.image_dataset import ImageDataset
 
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    category=FutureWarning,
+    module="transformers.models.grounding_dino.processing_grounding_dino",
+)
+
 app = typer.Typer(help="Run Grounding DINO + SAM2 segmentation.")
 
 
@@ -99,13 +106,22 @@ class GroundingDinoDetector:
 
         outputs = self.model(**inputs)
 
-        results = self.processor.post_process_grounded_object_detection(
-            outputs,
-            inputs.input_ids,
-            box_threshold=box_threshold,
-            text_threshold=text_threshold,
-            target_sizes=[(image.height, image.width)],
-        )
+        try:
+            results = self.processor.post_process_grounded_object_detection(
+                outputs,
+                inputs.input_ids,
+                threshold=box_threshold,
+                text_threshold=text_threshold,
+                target_sizes=[(image.height, image.width)],
+            )
+        except TypeError:
+            results = self.processor.post_process_grounded_object_detection(
+                outputs,
+                inputs.input_ids,
+                box_threshold=box_threshold,
+                text_threshold=text_threshold,
+                target_sizes=[(image.height, image.width)],
+            )
 
         result = results[0]
 

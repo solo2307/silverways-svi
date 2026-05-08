@@ -52,13 +52,40 @@ conda activate silverways-cpu
 ``` 
 For GPU users: 
 ```bash
-mamba env create -f environment-gpu.yaml
+conda env create -f environment-gpu.yaml
 conda activate silverways-gpu
+python --version
+python -c "import torch; print(torch.cuda.is_available()); print(torch.version.cuda); print(torch.cuda.get_device_name(0))"
+```
+Set CUDA build paths:
+```bash
+conda install -n silverways-gpu -c conda-forge gcc_linux-64=12 gxx_linux-64=12 cmake ninja scikit-build-core
+conda install -n silverways-gpu -c nvidia cuda-nvcc=12.1 cuda-cudart-dev=12.1 cuda-cudart-static=12.1 cuda-libraries-dev=12.1 cuda-cccl=12.1 cuda-driver-dev=12.1 cuda-version=12.1
+```
+Now install `llama-cpp-python` CUDA wheel:
+```bash
+conda activate silverways-gpu
+
+export CUDA_HOME="$CONDA_PREFIX"
+export LIBRARY_PATH="$CONDA_PREFIX/lib:$LIBRARY_PATH"
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
+export CC="$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-cc"
+export CXX="$CONDA_PREFIX/bin/x86_64-conda-linux-gnu-c++"
+export CUDAHOSTCXX="$CXX"
+export CMAKE_ARGS="-DGGML_CUDA=on -DCMAKE_CUDA_HOST_COMPILER=$CXX -DCUDAToolkit_ROOT=$CONDA_PREFIX -DCMAKE_CUDA_ARCHITECTURES=86"
+export FORCE_CMAKE=1
+export CMAKE_BUILD_PARALLEL_LEVEL=2
+
+python -m pip install --no-cache-dir --no-binary llama-cpp-python "llama-cpp-python==0.3.20"
+```
+Test
+```bash
+python -c "from llama_cpp import Llama; print('llama-cpp-python CUDA build OK')"
 ```
 
 3. For CLI commands
 ```bash 
-python pip install -e . --no-deps 
+python -m pip install -e . --no-deps 
 ```
 
 ## CLI usage notes
@@ -91,6 +118,7 @@ silverways run-pspnet --config conf/models/pspnet.yaml
 silverways run-yolo --config conf/models/yolo.yaml
 silverways run-mask2former --config conf/models/mask2former_mapillary.yaml
 silverways run-grounded-sam --config conf/models/grounded_sam.yaml
+silverways run-groundedsam-internvl --config conf/models/groundedsam_internvl.yaml
 ```
 
 ## Config YAML files

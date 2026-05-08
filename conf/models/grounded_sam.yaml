@@ -1,8 +1,11 @@
-input_dir: data/pano
+input_dir: data/
+# /mnt/sds-hd/sd17f001/ygrin/silverways/ZeroShotEval/mannheim
+
+# data/pano
 output_dir: outputs/grounded_sam
 recursive: false
-limit: null
-device: cuda
+limit: 1
+device: auto
 
 grounding_dino:
   name_or_path: IDEA-Research/grounding-dino-tiny
@@ -14,13 +17,13 @@ sam2:
 
 prompt:
   text_labels:
-    - tree
-    - grass
-    - bush
+    - sidewalk
+    - footway
+    - pedestrian walkway
   box_threshold: 0.35
   text_threshold: 0.25
 
 outputs:
   save_json: true
-  save_masks: true
+  save_masks: false
   save_annotated: true

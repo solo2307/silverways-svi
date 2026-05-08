@@ -1,7 +1,9 @@
 # conf/models/groundedsam_internvl.yaml
 
-input_dir: data/pano
-output_dir: outputs/groundedsam_internvl
+input_dir: /mnt/sds-hd/sd17f001/ygrin/silverways/ZeroShotEval/mannheim
+#/mnt/sds-hd/sd17f001/ygrin/silverways/ZeroShotEval
+output_dir:  outputs/groundedsam_internvl
+#/mnt/sds-hd/sd17f001/ygrin/silverways/outputs/groundedsam_internvl
 recursive: false
 limit: 1
 device: auto
@@ -20,7 +22,6 @@ sam2:
 prompt:
   text_labels:
     - sidewalk
-    - sidewalk surface
     - pedestrian walkway
     - footway
   box_threshold: 0.35
@@ -28,9 +29,9 @@ prompt:
 
 internvl:
   model_path: models/internvl/InternVL3-8B-Q4_K_M.gguf
-  mmproj_path: models/internvl/mmproj-F16.gguf
+  mmproj_path: models/internvl/mmproj-BF16.gguf
   n_ctx: 8192
-  n_gpu_layers: 0
+  n_gpu_layers: -1
   verbose: false
 
 outputs:
