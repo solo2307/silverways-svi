@@ -235,5 +235,21 @@ def run_groundedsam_internvl(
         ["infer", "--config", str(config)],
     )
 
+
+@app.command("run-mask2former-internvl")
+def run_mask2former_internvl(
+    config: Path = typer.Option(
+        Path("conf/models/mask2former_internvl.yaml"),
+        "--config",
+        "-c",
+        help="Path to Mask2Former + InternVL config YAML.",
+    ),
+) -> None:
+    """Run Mask2Former sidewalk segmentation followed by InternVL OSM surface/smoothness tagging."""
+    run_module(
+        "silverways_svi.runners.run_mask2former_internvl",
+        ["infer", "--config", str(config)],
+    )
+
 if __name__ == "__main__":
     app()

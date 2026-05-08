@@ -5,8 +5,8 @@ limit: null
 device: auto
 
 model:
-  name_or_path: IDEA-Research/grounding-dino-tiny
-  local_dir: models/grounding_dino_tiny
+  name_or_path: IDEA-Research/grounding-dino-base
+  local_dir: models/grounding_dino_base
 
 prompt:
   text_labels:

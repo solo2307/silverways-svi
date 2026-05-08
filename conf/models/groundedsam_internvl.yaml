@@ -1,41 +1,75 @@
 # conf/models/groundedsam_internvl.yaml
 
-input_dir: /mnt/sds-hd/sd17f001/ygrin/silverways/ZeroShotEval/mannheim
-#/mnt/sds-hd/sd17f001/ygrin/silverways/ZeroShotEval
-output_dir:  outputs/groundedsam_internvl
-#/mnt/sds-hd/sd17f001/ygrin/silverways/outputs/groundedsam_internvl
+input_dir: data/size
+# input_dir: /mnt/sds-hd/sd17f001/ygrin/silverways/google-svi/ZeroShotEval/mannheim
+
+output_dir: outputs/groundedsam_internvl
+# output_dir: /mnt/sds-hd/sd17f001/ygrin/silverways/google-svi/outputs-zero/groundedsam_internvl
+
 recursive: false
-limit: 1
+limit: 2
 device: auto
 
+# Crop sent to InternVL.
+# For 640x640 images, avoid huge padding.
 crop_padding_ratio: 0.15
-use_masked_crop: true
+
+# false keeps visual context around the candidate surface.
+# true whites out everything outside the SAM mask.
+use_masked_crop: false
 
 grounding_dino:
-  name_or_path: IDEA-Research/grounding-dino-tiny
-  local_dir: models/grounding_dino_tiny
+  # Base is stronger than tiny, but slower.
+  name_or_path: IDEA-Research/grounding-dino-base
+  local_dir: models/grounding_dino_base
+
+  # Alternative:
+  # name_or_path: IDEA-Research/grounding-dino-tiny
+  # local_dir: models/grounding_dino_tiny
 
 sam2:
   weights: models/sam2_b.pt
-  imgsz: 1024
+
+  # Your images are 640x640, so 640 is enough.
+  # 1024 is usually slower and does not add real detail.
+  imgsz: 640
 
 prompt:
+  # Primary target: dedicated sidewalk.
   text_labels:
     - sidewalk
-    - pedestrian walkway
-    - footway
-  box_threshold: 0.35
-  text_threshold: 0.25
+
+  # Slightly lower thresholds help recall on 640x640 SVI.
+  box_threshold: 0.25
+  text_threshold: 0.20
+
+  # Fallback:
+  # If no sidewalk is detected, try road/shared-surface candidates.
+  # InternVL then decides whether the crop is:
+  # dedicated_sidewalk, shared_pedestrian_vehicle_surface, road_only,
+  # driveway_or_private_access, or not_visible.
+  fallback_only_if_no_detection: true
+  fallback_text_labels:
+    - road
+    - residential street
+    - driveway
+
+  fallback_box_threshold: 0.20
+  fallback_text_threshold: 0.15
 
 internvl:
   model_path: models/internvl/InternVL3-8B-Q4_K_M.gguf
   mmproj_path: models/internvl/mmproj-BF16.gguf
   n_ctx: 8192
+
+  # -1 = offload all possible layers to GPU in llama.cpp.
+  # Use 0 only for CPU debug.
   n_gpu_layers: -1
   verbose: false
+  rules_path: conf/rules/osm_quality.yaml
 
 outputs:
   save_json: true
   save_masks: true
   save_annotated: true
-  save_crops: true
+  save_crops: false

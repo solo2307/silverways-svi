@@ -1,5 +1,5 @@
 input_dir: data/
-# /mnt/sds-hd/sd17f001/ygrin/silverways/ZeroShotEval/mannheim
+# /mnt/sds-hd/sd17f001/ygrin/silverways/google-svi/ZeroShotEval/mannheim
 
 # data/pano
 output_dir: outputs/grounded_sam

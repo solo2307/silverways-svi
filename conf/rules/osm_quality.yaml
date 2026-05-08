@@ -1,0 +1,14 @@
+# conf/rules/osm_quality.yaml
+
+# Deterministic mapping from OSM smoothness tag to your 1-5 analysis score.
+# This overrides any numeric score returned by InternVL.
+smoothness_score_1_to_5:
+  excellent: 5
+  good: 4
+  intermediate: 3
+  bad: 2
+  very_bad: 1
+  horrible: 1
+  very_horrible: 1
+  impassable: 1
+  not_visible: null

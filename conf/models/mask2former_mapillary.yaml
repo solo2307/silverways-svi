@@ -1,8 +1,8 @@
 input_dir: data/pano
 output_dir: outputs/mask2former_mapillary
 recursive: true
-limit: null
-device: cpu
+limit: 1
+device: auto
 
 model:
   name_or_path: facebook/mask2former-swin-large-mapillary-vistas-semantic
